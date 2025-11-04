@@ -565,7 +565,23 @@ docker compose up -d
 2. Check volume mounts: `docker compose -f docker-compose.dev.yml ps`
 3. Restart containers: `docker compose -f docker-compose.dev.yml restart`
 
-### Build Fails
+### Build Fails - "gid '1000' in use"
+
+**Error**: `addgroup: gid '1000' in use` during Docker build
+
+**Cause**: Alpine Linux base image already has a group with GID 1000
+
+**Solution**: This has been fixed in the Dockerfiles. If you still see this error:
+```powershell
+# Clean and rebuild
+docker compose down
+docker system prune -f
+.\docker-rebuild.ps1
+```
+
+The Dockerfiles now use `|| true` to ignore this error and use numeric UID/GID directly.
+
+### Build Fails - General
 
 **Solution**:
 ```powershell

@@ -31,15 +31,16 @@ COPY --from=builder /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Create non-root user for security
-RUN addgroup -g 1000 appgroup && \
-    adduser -D -u 1000 -G appgroup appuser && \
-    chown -R appuser:appgroup /usr/share/nginx/html && \
-    chown -R appuser:appgroup /var/cache/nginx && \
-    chown -R appuser:appgroup /var/log/nginx && \
+# Use existing group if GID 1000 exists, otherwise create new group
+RUN (addgroup -g 1000 appgroup 2>/dev/null || true) && \
+    adduser -D -u 1000 appuser 2>/dev/null || true && \
+    chown -R 1000:1000 /usr/share/nginx/html && \
+    chown -R 1000:1000 /var/cache/nginx && \
+    chown -R 1000:1000 /var/log/nginx && \
     touch /var/run/nginx.pid && \
-    chown -R appuser:appgroup /var/run/nginx.pid
+    chown -R 1000:1000 /var/run/nginx.pid
 
-USER appuser
+USER 1000
 
 # Expose port
 EXPOSE 3000
