@@ -2,6 +2,27 @@
 
 Welcome to the final project for the AI-Driven Software Engineering Program! This two-day capstone is your opportunity to synthesize all the skills you've acquired over the past eight days. You will apply AI-assisted techniques across the entire software development lifecycle to build a complete, functional application from the ground up.
 
+## Quick Start
+
+### Docker (Recommended)
+```powershell
+# Windows PowerShell
+.\docker-start.ps1
+
+# Linux/macOS
+./docker-start.sh
+```
+
+Access the application:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+### Documentation
+- **Docker Setup**: [DOCKER_README.md](DOCKER_README.md) - Complete Docker guide
+- **Manual Setup**: [SETUP.md](SETUP.md) - Non-Docker installation
+- **Environment Variables**: [ENV_FORMAT.md](ENV_FORMAT.md) - Configuration reference
+
 ---
 
 ## 🎯 Project Goal

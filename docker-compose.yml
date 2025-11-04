@@ -1,0 +1,54 @@
+services:
+  # Backend Service (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: synapseSquad-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - BACKEND_PORT=8000
+      - FRONT_END_URL=http://localhost:3000
+    volumes:
+      # Mount backend code for hot-reload
+      - ./backend:/app
+      # Prevent __pycache__ from being shared with host
+      - /app/__pycache__
+    restart: unless-stopped
+    networks:
+      - synapseSquad-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/status')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend Service (React with nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACK_END_URL=http://localhost:8000
+    container_name: synapseSquad-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - synapseSquad-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  synapseSquad-network:
+    driver: bridge
+    name: synapseSquad-network
+

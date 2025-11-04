@@ -2,6 +2,26 @@
 
 This guide walks you through setting up both the backend (FastAPI) and frontend (React) development environments, installing dependencies, configuring environment variables, and running everything locally.
 
+## Quick Start with Docker (Recommended)
+
+The fastest way to get started is using Docker:
+
+```powershell
+# Windows PowerShell
+.\docker-start.ps1
+
+# Linux/macOS
+./docker-start.sh
+```
+
+This starts both frontend and backend in containers. See [DOCKER_README.md](DOCKER_README.md) for full Docker documentation.
+
+---
+
+## Manual Setup (Alternative)
+
+If you prefer to run services directly on your machine without Docker, follow the instructions below.
+
 ---
 
 ## 1. Prerequisites
