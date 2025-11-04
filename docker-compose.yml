@@ -6,10 +6,10 @@ services:
       dockerfile: ./backend/Dockerfile
     container_name: synapseSquad-backend
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     environment:
-      - BACKEND_PORT=8000
-      - FRONT_END_URL=http://localhost:3000
+      - BACKEND_PORT=${BACKEND_PORT:-8000}
+      - FRONT_END_URL=${FRONT_END_URL:-http://localhost:3000}
     volumes:
       # Mount backend code for hot-reload
       - ./backend:/app
@@ -31,7 +31,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - REACT_APP_BACK_END_URL=http://localhost:8000
+        - REACT_APP_BACK_END_URL=${BACK_END_URL:-http://localhost:8000}
     container_name: synapseSquad-frontend
     ports:
       - "3000:3000"

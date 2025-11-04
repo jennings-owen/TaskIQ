@@ -47,7 +47,7 @@ echo ""
 echo -e "${YELLOW}Checking environment configuration...${NC}"
 if [ ! -f ".env" ]; then
     echo -e "${YELLOW}WARNING: .env file not found. Using default values.${NC}"
-    echo -e "${YELLOW}For custom configuration, create a .env file based on env.docker.example${NC}"
+    echo -e "${YELLOW}For custom configuration, see ENV_FORMAT.md and create a .env file${NC}"
 else
     echo -e "${GREEN}.env file found${NC}"
 fi

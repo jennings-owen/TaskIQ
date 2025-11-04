@@ -128,31 +128,69 @@ docker stop $(docker ps -q)
 
 ### Environment Variables
 
-The application uses environment variables for configuration. Create a `.env` file in the root directory based on `env.docker.example`:
+The application uses environment variables from a `.env` file for configuration. Docker Compose automatically loads this file.
+
+#### Setup
 
 ```bash
-# Copy example file
-cp env.docker.example .env
+# Create .env file (optional - defaults work without it)
+# See ENV_FORMAT.md for template and copy the Docker section
+
+# Or create manually:
+# nano .env  or  notepad .env
 ```
 
-#### Root .env (Docker Compose)
-```env
-BACKEND_PORT=8000
-BACK_END_URL=http://localhost:8000
-FRONT_END_URL=http://localhost:3000
-COMPOSE_PROJECT_NAME=synapseSquad
+#### Available Variables
+
+| Variable | Default | Description | Used By |
+|----------|---------|-------------|---------|
+| `BACKEND_PORT` | 8000 | Port for FastAPI server | Backend, Docker |
+| `BACK_END_URL` | http://localhost:8000 | Backend API URL | Frontend (build time) |
+| `FRONT_END_URL` | http://localhost:3000 | Frontend URL for CORS | Backend |
+| `COMPOSE_PROJECT_NAME` | synapseSquad | Docker project name | Docker Compose |
+
+#### How It Works
+
+**docker-compose.yml uses variables:**
+```yaml
+ports:
+  - "${BACKEND_PORT:-8000}:8000"  # Uses .env value or defaults to 8000
+environment:
+  - BACKEND_PORT=${BACKEND_PORT:-8000}
+  - FRONT_END_URL=${FRONT_END_URL:-http://localhost:3000}
 ```
+
+**Syntax:** `${VARIABLE:-default}`
+- If `.env` exists and has `BACKEND_PORT=8080`, uses 8080
+- If `.env` doesn't exist or variable is missing, uses default (8000)
+- **No .env file required** - defaults work out of the box
 
 #### Backend Environment Variables
-The backend container automatically receives:
-- `BACKEND_PORT`: Port for FastAPI server (default: 8000)
-- `FRONT_END_URL`: Frontend URL for CORS (default: http://localhost:3000)
+The backend container receives:
+- `BACKEND_PORT`: Port for FastAPI server (from .env or default: 8000)
+- `FRONT_END_URL`: Frontend URL for CORS (from .env or default: http://localhost:3000)
 
 #### Frontend Environment Variables
-The frontend container automatically receives:
-- `REACT_APP_BACK_END_URL`: Backend API URL (default: http://localhost:8000)
-- `CHOKIDAR_USEPOLLING`: Enable file watching in Docker
-- `WATCHPACK_POLLING`: Enable webpack polling for hot-reload
+The frontend container receives at **build time**:
+- `REACT_APP_BACK_END_URL`: Backend API URL (from .env `BACK_END_URL` or default: http://localhost:8000)
+- `CHOKIDAR_USEPOLLING`: Enable file watching in Docker (dev mode)
+- `WATCHPACK_POLLING`: Enable webpack polling for hot-reload (dev mode)
+
+#### Customizing Ports
+
+If ports 3000 or 8000 are in use:
+
+```env
+# In .env file
+BACKEND_PORT=8080
+BACK_END_URL=http://localhost:8080
+FRONT_END_URL=http://localhost:3001
+```
+
+Then rebuild:
+```powershell
+.\docker-rebuild.ps1
+```
 
 ## Accessing the Application
 

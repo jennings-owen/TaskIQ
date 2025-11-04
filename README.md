@@ -19,7 +19,7 @@ Access the application:
 - API Docs: http://localhost:8000/docs
 
 ### Documentation
-- **Docker Setup**: [DOCKER_README.md](DOCKER_README.md) - Complete Docker guide
+- **Docker Setup**: [docs/DOCKER_README.md](docs/DOCKER_README.md) - Complete Docker guide
 - **Manual Setup**: [SETUP.md](SETUP.md) - Non-Docker installation
 - **Environment Variables**: [ENV_FORMAT.md](ENV_FORMAT.md) - Configuration reference
 

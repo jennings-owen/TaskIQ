@@ -52,16 +52,22 @@ git pull origin master
 
 ## 3. Environment Variables
 
-The list and format of required environment variables are defined in `ENV_FORMAT.md`. Create a `.env` file based on that format.
+See [ENV_FORMAT.md](ENV_FORMAT.md) for complete environment variable documentation.
 
-If you add new variables, also update `ENV_FORMAT.md` so the team has a single source of truth.
+**Quick Setup:**
 
-Frontend optional environment variables (if you later consume the API from React):
-Create `frontend/.env`:
+Backend `.env` (create in `/backend/` folder):
 ```env
-REACT_APP_API_BASE_URL=http://localhost:8000
+BACKEND_PORT=8000
+FRONT_END_URL=http://localhost:3000
 ```
-Note: CRA (Create React App) only exposes variables prefixed with `REACT_APP_` at build time.
+
+Frontend `.env` (create in `/frontend/` folder):
+```env
+REACT_APP_BACK_END_URL=http://localhost:8000
+```
+
+**Note:** If you add new variables, update `ENV_FORMAT.md` to maintain single source of truth.
 
 ---
 

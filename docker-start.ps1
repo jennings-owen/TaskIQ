@@ -63,7 +63,7 @@ Write-Host ""
 Write-Host "Checking environment configuration..." -ForegroundColor Yellow
 if (-Not (Test-Path ".env")) {
     Write-Host "WARNING: .env file not found. Using default values." -ForegroundColor Yellow
-    Write-Host "For custom configuration, create a .env file based on env.docker.example" -ForegroundColor Yellow
+    Write-Host "For custom configuration, see ENV_FORMAT.md and create a .env file" -ForegroundColor Yellow
 } else {
     Write-Host ".env file found" -ForegroundColor Green
 }
