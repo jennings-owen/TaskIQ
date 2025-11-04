@@ -9,14 +9,14 @@ function App() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/status');
+        const response = await fetch(`${process.env.REACT_APP_BACK_END_URL}/status`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
         setStatus(data);
       } catch (err) {
-        setError(err.message);
+        setError("Failed to fetch status from the backend.");
       } finally {
         setLoading(false);
       }
