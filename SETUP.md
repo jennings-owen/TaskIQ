@@ -65,13 +65,11 @@ pip install -r ../requirements.txt
 
 (If `requirements.txt` lives at root, the above relative path is correct.)
 
-Run the backend (uses uvicorn):
+Run the backend (via Python entrypoint that internally starts uvicorn and reads `BACKEND_PORT` with fallback 8000):
 ```powershell
-uvicorn main:app --reload --port ${env:BACKEND_PORT}
-```
-If `BACKEND_PORT` isn't set, fallback:
-```powershell
-uvicorn main:app --reload --port 8000
+# Optional: override default port
+$env:BACKEND_PORT=8010
+python .\main.py
 ```
 
 Test in browser or curl:
@@ -149,7 +147,7 @@ cd backend
 python -m venv .venv
 ./.venv/Scripts/Activate.ps1
 pip install -r ../requirements.txt
-uvicorn main:app --reload --port 8000
+python .\main.py   # uses BACKEND_PORT if set, else 8000
 ```
 
 Frontend (new terminal):
