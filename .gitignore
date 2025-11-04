@@ -22,6 +22,7 @@ venv.bak/
 .env
 .env.*
 
+node_modules/
 
 # IDE and Editor Folders
 .vscode/
