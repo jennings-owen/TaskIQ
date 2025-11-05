@@ -1,0 +1,24 @@
+# Requirements for Business Idea to PRD Generator
+# Custom CrewAI Agent for transforming business ideas into comprehensive PRD documents
+
+# Core dependencies
+crewai>=0.28.0
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# LLM providers
+langchain-openai>=0.1.0
+openai>=1.0.0
+
+# HTTP client for testing
+requests>=2.31.0
+
+# Additional utilities
+python-multipart>=0.0.6  # For FastAPI form data support
+
+# Development dependencies (optional)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0  # For async HTTP testing
