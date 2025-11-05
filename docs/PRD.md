@@ -13,7 +13,9 @@
 | PRD.md   | This document | This is the overall product requirement document for the project. |
 | PRD_AI_DRAFT.md | [Draft](./PRD_AI_DRAFT.md) | This is the original AI generated PRD document. It serves as the baseline for this final PRD document. |
 | TASKS.md | [Tasks](./TASKS.md) | This document outlines all the tasks required to complete a MVP. |
-| schema.sql | [Schema](./schema.sql) | The initial SQLite schema file based on the constraints defined in this PRD. |
+| schema.sql | [Schema](../artifacts//schema.sql) | The initial SQLite schema file based on the constraints defined in this PRD. |
+| seed_data.sql | [Data](../artifacts/seed_data.sql)| The SQL data used to populate the database. |
+| team_synapse.db | [Database](../artifacts/team_synapse.db)| The SQL database. |
 | ARCHITECTURE.md | [Architecture](./architecture.md) | Architecture design including UML diagrams. |
 | ADR.md | [Architecture Design Record](./ARD.md) | Technical decisions with their justifications. |
 
@@ -179,8 +181,6 @@ Response:
 | id                | INTEGER  | PRIMARY KEY               | Record ID                            |
 | task_id           | INTEGER  | FOREIGN KEY → tasks(id)   | Task being scored                    |
 | score             | INTEGER  | NOT NULL                  | AI-calculated priority score (1–100) |
-| algorithm_version | TEXT     | NULLABLE                  | e.g., "v1.0-rulebased"               |
-| generated_at      | DATETIME | DEFAULT CURRENT_TIMESTAMP | When the score was generated         |
 
 5. task_tshirt_scores
 
@@ -190,9 +190,6 @@ Response:
 | task_id           | INTEGER  | FOREIGN KEY → tasks(id)   | Task being evaluated         |
 | tshirt_size       | TEXT     | NOT NULL                  | XS / S / M / L / XL          |
 | rationale         | TEXT     | NULLABLE                  | AI explanation or reasoning  |
-| algorithm_version | TEXT     | NULLABLE                  | Version tag of AI logic      |
-| generated_at      | DATETIME | DEFAULT CURRENT_TIMESTAMP | When the score was generated |
-
 
 ## 12. Sample Project Directory Format (MVP)
 
