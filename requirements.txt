@@ -4,4 +4,10 @@ python-dotenv
 watchfiles
 sqlalchemy
 alembic
- 
+pydantic
+pytest
+pytest-asyncio
+httpx
+bandit
+safety
+pytest-cov

@@ -4,24 +4,42 @@ Welcome to the final project for the AI-Driven Software Engineering Program! Thi
 
 ## Quick Start
 
-### Docker (Recommended)
+### Three Operating Modes
+
+**1. Production Mode (Default)**
 ```powershell
-# Windows PowerShell
-.\docker-start.ps1
-
-# Linux/macOS
-./docker-start.sh
+.\docker-start.ps1          # Windows
+./docker-start.sh           # Linux/Mac
 ```
+Optimized production build, runs in detached mode.
 
-Access the application:
+**2. Development Mode**
+```powershell
+.\docker-start.ps1 -Dev     # Windows
+./docker-start.sh -Dev      # Linux/Mac
+```
+Hot-reload enabled, code changes reflected immediately.
+
+**3. Test Mode**
+```powershell
+.\docker-start.ps1 -Test    # Windows
+./docker-start.sh -Test     # Linux/Mac
+```
+Runs full test suite (192+ tests) with coverage reporting.
+
+### Access Points
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 
 ### Documentation
-- **Docker Setup**: [docs/DOCKER_README.md](docs/DOCKER_README.md) - Complete Docker guide
-- **Manual Setup**: [SETUP.md](SETUP.md) - Non-Docker installation
-- **Environment Variables**: [ENV_FORMAT.md](ENV_FORMAT.md) - Configuration reference
+- **Docker Guide**: [DOCKER_START_GUIDE.md](DOCKER_START_GUIDE.md) - Complete Docker usage guide
+- **Manual Setup**: [docs/SETUP.md](docs/SETUP.md) - Non-Docker installation
+- **Test Suite**: [docs/TEST_SUITE_OVERVIEW.md](docs/TEST_SUITE_OVERVIEW.md) - Complete test documentation
+- **CI/CD Pipeline**: [docs/CICD_PIPELINE.md](docs/CICD_PIPELINE.md) - Pipeline and testing details
+- **Architecture**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System design
+- **Product Requirements**: [docs/PRD.md](docs/PRD.md) - Product specification
+- **Agile Plan**: [docs/AGILE_PLAN.md](docs/AGILE_PLAN.md) - Sprint plan and team responsibilities
 
 ---
 
@@ -155,6 +173,182 @@ Your final presentation should be a concise and engaging overview of your projec
 
 ---
 
+## 🧪 Testing & Quality Assurance
+
+### Quick Test Execution
+
+**Run Full Test Suite (Recommended)**
+```powershell
+.\docker-start.ps1 -Test    # Windows
+./docker-start.sh -Test     # Linux/Mac
+```
+
+This runs 192+ tests across backend and frontend:
+- Backend: 127+ tests (CRUD, AI endpoints, database, integration)
+- Frontend: 65+ tests (components, forms, dashboard)
+- Auto-generates test.db if missing
+- Generates coverage reports
+- Shows helpful commands for viewing logs
+
+**Manual Test Execution**
+```bash
+# Backend tests
+cd backend
+pytest tests/ -v --cov=. --cov-report=html
+
+# Frontend tests
+cd frontend
+npm test -- --coverage
+
+# View logs after Docker tests
+docker-compose -f docker-compose.test.yml logs backend-test
+docker-compose -f docker-compose.test.yml logs frontend-test
+
+# Cleanup
+docker-compose -f docker-compose.test.yml down -v
+```
+
+### Test Structure
+
+```
+backend/tests/
+├── conftest.py              # Pytest fixtures (auto-generates test.db)
+├── test_tasks.py            # 36 tests - CRUD operations
+├── test_ai.py               # 35 tests - AI endpoints
+├── test_database.py         # 32 tests - Database constraints
+├── test_integration.py      # 21 tests - Integration workflows
+└── test.db                  # Test database (auto-generated)
+
+frontend/src/__tests__/
+├── TaskList.test.jsx        # 20+ tests - Component tests
+├── TaskForm.test.jsx        # 25+ tests - Form validation
+└── Dashboard.test.jsx       # 20+ tests - Analytics display
+```
+
+### Coverage Requirements
+
+- Backend: Minimum 80% (enforced in CI/CD)
+- Frontend: Tracked (informational)
+- Critical Paths: > 95%
+- Performance: All API tests validate < 200ms response time
+
+### CI/CD Integration
+
+Tests run automatically on every push to main/master/develop:
+- Uses same `docker-compose.test.yml` configuration
+- Uploads coverage reports to Codecov
+- Fails pipeline if tests fail or coverage < 80%
+- Generates test logs as artifacts
+
+See [Test Suite Overview](docs/TEST_SUITE_OVERVIEW.md) and [CI/CD Pipeline](docs/CICD_PIPELINE.md) for complete details.
+
+---
+
+## 🔒 Security
+
+### Security Features
+
+- Input validation using Pydantic schemas
+- CORS configuration for frontend integration
+- SQL injection protection via SQLAlchemy ORM
+- Comprehensive security review documentation
+
+### Security Scanning
+
+The project includes automated security scanning via GitHub Actions:
+
+- **Bandit**: Python security linter
+- **Safety**: Dependency vulnerability checker
+- **CodeQL**: Advanced code analysis
+- **Trivy**: Container security scanning
+
+### Known Limitations (MVP)
+
+- No authentication/authorization (suitable for demo only)
+- Deploy only in trusted environments
+- See [Security Review](docs/SECURITY_REVIEW.md) for complete assessment
+
+---
+
+## 🔄 CI/CD Pipeline
+
+### GitHub Actions Workflows
+
+The project includes automated CI/CD workflows:
+
+**CI/CD Pipeline** (`.github/workflows/ci.yml`):
+- Backend and frontend testing
+- Code linting and quality checks
+- Docker build validation
+- Integration testing
+- Coverage reporting
+
+**Security Scan** (`.github/workflows/security.yml`):
+- Automated security scanning
+- Dependency vulnerability checks
+- Secret detection
+- Weekly scheduled scans
+
+### Workflow Status
+
+![CI/CD](https://img.shields.io/badge/CI%2FCD-passing-brightgreen)
+![Security](https://img.shields.io/badge/Security-scanned-blue)
+![Coverage](https://img.shields.io/badge/coverage-80%25-yellowgreen)
+
+See [GitHub Actions README](.github/workflows/README.md) for detailed workflow documentation.
+
+---
+
+## 📊 Project Structure
+
+```
+Agile-TaskIQ/
+├── .github/
+│   └── workflows/           # CI/CD workflows
+│       ├── ci.yml          # Main CI/CD pipeline
+│       ├── security.yml    # Security scanning
+│       └── README.md       # Workflow documentation
+├── backend/
+│   ├── main.py             # FastAPI application
+│   ├── tests/              # Test suite
+│   │   ├── conftest.py    # Test fixtures
+│   │   ├── test_tasks.py  # Task endpoint tests
+│   │   └── test_ai.py     # AI endpoint tests
+│   ├── Dockerfile          # Backend container
+│   └── Dockerfile.dev      # Development container
+├── frontend/
+│   ├── src/
+│   │   ├── App.js         # Main React component
+│   │   └── ...
+│   ├── Dockerfile         # Frontend container
+│   └── package.json       # Node dependencies
+├── docs/
+│   ├── PRD.md             # Product Requirements Document
+│   ├── AGILE_PLAN.md      # Sprint plan
+│   ├── API_REFERENCE.md   # API documentation
+│   ├── TESTING_GUIDE.md   # Testing instructions
+│   ├── SECURITY_REVIEW.md # Security assessment
+│   └── INTEGRATION_TEST_CHECKLIST.md
+├── docker-compose.yml     # Container orchestration
+├── requirements.txt       # Python dependencies
+└── README.md             # This file
+```
+
+---
+
+## 🎯 Team Responsibilities
+
+Based on [Agile Plan](docs/AGILE_PLAN.md):
+
+| Member | Role | Responsibilities |
+|--------|------|------------------|
+| Member 1 (George) | Database Design | Schema design, constraints, indexes |
+| Member 2 (Kristy) | Backend Development | FastAPI endpoints, business logic, database integration |
+| Member 3 (Owen) | Frontend Development | React components, API integration, UI/UX |
+| Member 4 (Lawrence) | Integration & Testing | Unit tests, integration tests, security review, documentation |
+
+---
+
 ## 📝 Submission & Evaluation
 
 * **Submission:** Please push your complete project, including all artifacts and source code, to a GitHub repository and submit the link.
@@ -165,6 +359,7 @@ Your final presentation should be a concise and engaging overview of your projec
     4.  **Documentation Quality:** Is the PRD and architecture well-defined?
     5.  **Presentation Clarity:** Was the demo and explanation clear and professional?
 
+<<<<<<< HEAD
 Good luck, and have fun building! The instructional team is here to support you.
 
 ---
@@ -274,3 +469,88 @@ pytest backend/tests -q
 ### Contact points
 
 If frontend engineers need more fields, add them to Pydantic models in `backend/app/schemas.py` and the database models in `backend/app/models.py`. Coordinate schema changes with the team and add an Alembic migration.
+=======
+---
+
+## 🆘 Troubleshooting
+
+### Backend won't start
+
+```bash
+# Check Python version (requires 3.8+)
+python --version
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Check environment variables
+cat .env  # Linux/macOS
+type .env # Windows
+```
+
+### Frontend won't start
+
+```bash
+# Check Node version (requires 16+)
+node --version
+
+# Clean install
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Docker issues
+
+```bash
+# Rebuild containers
+docker-compose down
+docker-compose build --no-cache
+docker-compose up
+```
+
+### Tests failing
+
+```bash
+# Run tests with Docker (recommended)
+.\docker-start.ps1 -Test
+
+# View test logs
+docker-compose -f docker-compose.test.yml logs backend-test
+docker-compose -f docker-compose.test.yml logs frontend-test
+
+# Run tests manually with verbose output
+cd backend
+pytest -vv
+
+# Run specific test
+pytest tests/test_tasks.py::TestTasksCRUD::test_create_task_success -v
+
+# Rebuild test images
+docker-compose -f docker-compose.test.yml build --no-cache
+```
+
+---
+
+## 📚 Additional Resources
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [React Documentation](https://react.dev/)
+- [Pytest Documentation](https://docs.pytest.org/)
+- [Docker Documentation](https://docs.docker.com/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+
+---
+
+## 📧 Support
+
+For questions or issues:
+- Review documentation in `docs/` directory
+- Check [Integration Guide](INTEGRATION_GUIDE.md)
+- Consult team members based on area of expertise
+- Review GitHub Actions logs for CI/CD issues
+
+---
+
+Good luck, and have fun building! The instructional team is here to support you.
+>>>>>>> 92b2413599b8925cbf328e18f601c8a22c5297be

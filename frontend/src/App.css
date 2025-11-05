@@ -1,62 +1,108 @@
-.App {
-  text-align: center;
+/* Custom component styles */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Additional custom styles can go here */
+
+/* Card and surface styles using design tokens */
+.card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.container {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.muted {
+  color: var(--muted-foreground, #6b7280);
+}
+
+.primary-text {
+  color: var(--primary);
+}
+
+.accent-bg {
+  background-color: var(--accent);
+}
+
+/* Button tokens and styling */
+.btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: .5rem;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
 
-.App-link {
-  color: #61dafb;
+.btn-primary {
+  /* Use a blue primary color instead of the theme gray */
+  background-color: #007bff;
+  color: #ffffff; /* ensure readable foreground */
+  border-color: #007bff;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.btn-outline {
+  background-color: transparent;
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.btn-outline {
+  background-color: transparent;
+  color: #007bff; /* blue text for outline buttons */
+  border-color: #007bff;
 }
 
-.App-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: #282c34;
-  color: white;
-  padding: 10px;
-  text-align: center;
-  font-size: 14px;
+.btn:hover {
+  filter: brightness(.98);
 }
 
-.status-error {
-  color: #ff6b6b;
+/* Nav / Sidebar specific tokens */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  border-color: transparent;
+  width: 100%;
+  text-align: left;
+  background-color: transparent;
+  color: var(--foreground);
 }
 
-.status-healthy {
-  color: #51cf66;
+.nav-item.active {
+  background-color: var(--accent-light);
+  color: var(--accent);
 }
 
-.status-unhealthy {
-  color: #ff6b6b;
+.nav-item .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make nav items blue to match original design */
+/* Active state: ensure text and icon are white for contrast */
+.nav-item.active {
+  color: var(--accent); /* white text */
+}
+
+/* Ensure icon inherits white color when active */
+.nav-item.active .icon, .nav-item.active .icon svg {
+  /* fill: #ffffff; */
+  stroke: var(--accent); /* lucide-react uses stroke for SVG icons */
 }
