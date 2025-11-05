@@ -5,6 +5,12 @@
 | **Author** | AI Business Analyst |
 | **Version** | 1.0 |
 
+
+# Table of Contents — PRD: Task Management System with Priority Intelligence
+
+| Document | Link | Description |
+| PRD.md   | This document | This is the 
+
 ## 1. Executive Summary & Vision
 Agile TaskIQ is a lightweight task management application designed to enhance productivity through AI-driven task prioritization. By integrating AI capabilities, the product aims to streamline task management for agile teams, software engineers, and consulting firms. The ultimate vision is to establish Agile TaskIQ as a leader in AI-enhanced task management solutions, offering unique features like T-shirt size recommendations to demonstrate AI capabilities and differentiate from competitors.
 
@@ -122,18 +128,95 @@ POST Request:
 Response:
 ```json
 {"recommended_size": "M"}
+```
+
+## 11. Database Schema
+
+1. users
+
+| Field         | Type     | Constraints               | Description                 |
+| ------------- | -------- | ------------------------- | --------------------------- |
+| id            | INTEGER  | PRIMARY KEY               | Unique user ID              |
+| name          | TEXT     | NOT NULL                  | User’s display name         |
+| email         | TEXT     | UNIQUE NOT NULL           | User email address          |
+| password_hash | TEXT     | NULLABLE                  | Optional password for login |
+| created_at    | DATETIME | DEFAULT CURRENT_TIMESTAMP | Account creation timestamp  |
+
+2. tasks
+
+| Field              | Type     | Constraints               | Description                       |
+| ------------------ | -------- | ------------------------- | --------------------------------- |
+| id                 | INTEGER  | PRIMARY KEY               | Task ID                           |
+| user_id            | INTEGER  | FOREIGN KEY → users(id)   | Owner of the task                 |
+| title              | TEXT     | NOT NULL                  | Task name                         |
+| description        | TEXT     | NULLABLE                  | Task details                      |
+| deadline           | DATETIME | NULLABLE                  | Due date                          |
+| estimated_duration | INTEGER  | NULLABLE                  | Estimated hours to complete       |
+| status             | TEXT     | DEFAULT 'pending'         | pending / in_progress / completed |
+| created_at         | DATETIME | DEFAULT CURRENT_TIMESTAMP | Record creation time              |
+| updated_at         | DATETIME | DEFAULT CURRENT_TIMESTAMP | Record update time                |
+
+3. task_dependencies
+
+| Field              | Type    | Constraints             | Description        |
+| ------------------ | ------- | ----------------------- | ------------------ |
+| id                 | INTEGER | PRIMARY KEY             | Record ID          |
+| task_id            | INTEGER | FOREIGN KEY → tasks(id) | The main task      |
+| depends_on_task_id | INTEGER | FOREIGN KEY → tasks(id) | Task it depends on |
 
 
-Database schema: 
-Table: tasks
-Field	Type	Description
-id	Integer (PK)	Auto-increment
-title	Text	Task title
-description	Text	Task details
-deadline	DateTime	Task due date
-estimated_duration	Integer	Duration (hours)
-status	Text	pending/in_progress/completed
-priority_score	Integer	Calculated AI score
+4. task_priority_scores
 
-... to continue
+| Field             | Type     | Constraints               | Description                          |
+| ----------------- | -------- | ------------------------- | ------------------------------------ |
+| id                | INTEGER  | PRIMARY KEY               | Record ID                            |
+| task_id           | INTEGER  | FOREIGN KEY → tasks(id)   | Task being scored                    |
+| score             | INTEGER  | NOT NULL                  | AI-calculated priority score (1–100) |
+| algorithm_version | TEXT     | NULLABLE                  | e.g., "v1.0-rulebased"               |
+| generated_at      | DATETIME | DEFAULT CURRENT_TIMESTAMP | When the score was generated         |
+
+5. task_tshirt_scores
+
+| Field             | Type     | Constraints               | Description                  |
+| ----------------- | -------- | ------------------------- | ---------------------------- |
+| id                | INTEGER  | PRIMARY KEY               | Record ID                    |
+| task_id           | INTEGER  | FOREIGN KEY → tasks(id)   | Task being evaluated         |
+| tshirt_size       | TEXT     | NOT NULL                  | XS / S / M / L / XL          |
+| rationale         | TEXT     | NULLABLE                  | AI explanation or reasoning  |
+| algorithm_version | TEXT     | NULLABLE                  | Version tag of AI logic      |
+| generated_at      | DATETIME | DEFAULT CURRENT_TIMESTAMP | When the score was generated |
+
+
+## 12. Sample Project Directory Format (MVP)
+
+```bash
+task-manager/
+├── backend/
+│   ├── app/
+│   │   ├── main.py              # FastAPI entrypoint
+│   │   ├── models.py            # SQLAlchemy models
+│   │   ├── schemas.py           # Pydantic schemas
+│   │   ├── crud.py              # CRUD operations
+│   │   ├── api/
+│   │   │   ├── tasks.py         # Task endpoints
+│   │   │   ├── ai.py            # AI endpoints (/rank, /size)
+│   │   │   └── dependencies.py  # Dependency endpoints
+│   │   └── database.py          # DB connection / session
+│   ├── requirements.txt
+│   └── alembic/                 # Optional for migrations
+│
+├── frontend/
+│   ├── src/
+│   │   ├── App.js
+│   │   ├── components/
+│   │   │   ├── TaskList.jsx
+│   │   │   ├── TaskForm.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── api/
+│   │   │   └── index.js         # Axios API calls
+│   │   └── utils/
+│   └── package.json
+│
+├── README.md
+└── .env                         # Environment variables
 ```
