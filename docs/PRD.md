@@ -159,7 +159,7 @@ Response:
 | description        | TEXT     | NULLABLE                  | Task details                      |
 | deadline           | DATETIME | NULLABLE                  | Due date                          |
 | estimated_duration | INTEGER  | NULLABLE                  | Estimated hours to complete       |
-| status             | TEXT     | DEFAULT 'pending'         | pending / in_progress / completed |
+| status             | TEXT     | DEFAULT 'pending'         | pending / in_progress / completed / |
 | created_at         | DATETIME | DEFAULT CURRENT_TIMESTAMP | Record creation time              |
 | updated_at         | DATETIME | DEFAULT CURRENT_TIMESTAMP | Record update time                |
 
