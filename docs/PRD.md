@@ -9,7 +9,14 @@
 # Table of Contents — PRD: Task Management System with Priority Intelligence
 
 | Document | Link | Description |
-| PRD.md   | This document | This is the 
+|:---------|:-----|:------------|
+| PRD.md   | This document | This is the overall product requirement document for the project. |
+| PRD_AI_DRAFT.md | [Draft](./PRD_AI_DRAFT.md) | This is the original AI generated PRD document. It serves as the baseline for this final PRD document. |
+| TASKS.md | [Tasks](./TASKS.md) | This document outlines all the tasks required to complete a MVP. |
+| schema.sql | [Schema](./schema.sql) | The initial SQLite schema file based on the constraints defined in this PRD. |
+| ARCHITECTURE.md | [Architecture](./architecture.md) | Architecture design including UML diagrams. |
+| ADR.md | [Architecture Design Record](./ARD.md) | Technical decisions with their justifications. |
+
 
 ## 1. Executive Summary & Vision
 Agile TaskIQ is a lightweight task management application designed to enhance productivity through AI-driven task prioritization. By integrating AI capabilities, the product aims to streamline task management for agile teams, software engineers, and consulting firms. The ultimate vision is to establish Agile TaskIQ as a leader in AI-enhanced task management solutions, offering unique features like T-shirt size recommendations to demonstrate AI capabilities and differentiate from competitors.
