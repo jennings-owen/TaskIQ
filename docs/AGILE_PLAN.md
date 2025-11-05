@@ -40,6 +40,7 @@
 - [ ] Display auto-generated priority scores in the UI.
 - [ ] Create SizeRecommendationForm for T-shirt size feature.
 - [ ] Add loading/error states and basic styling.
+- [ ] Set up page that prompts AI to rank all existing unfinished tasks and rank the top 3 importance. Show response
 
 ---
 
