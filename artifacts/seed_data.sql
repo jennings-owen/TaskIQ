@@ -15,14 +15,14 @@ INSERT INTO tasks (id, user_id, title, description, deadline, estimated_duration
 INSERT INTO task_dependencies (task_id, depends_on_task_id) VALUES (5, 1);
 
 -- Populate 'task_priority_scores' table
-INSERT INTO task_priority_scores (task_id, score, algorithm_version) VALUES (1, 88, 'v1.0-rulebased');
-INSERT INTO task_priority_scores (task_id, score, algorithm_version) VALUES (2, 95, 'v1.0-rulebased');
-INSERT INTO task_priority_scores (task_id, score, algorithm_version) VALUES (3, 75, 'v1.0-rulebased');
-INSERT INTO task_priority_scores (task_id, score, algorithm_version) VALUES (4, 80, 'v1.0-rulebased');
-INSERT INTO task_priority_scores (task_id, score, algorithm_version) VALUES (5, 65, 'v1.0-rulebased');
+INSERT INTO task_priority_scores (task_id, score ) VALUES (1, 88);
+INSERT INTO task_priority_scores (task_id, score ) VALUES (2, 95);
+INSERT INTO task_priority_scores (task_id, score ) VALUES (3, 75);
+INSERT INTO task_priority_scores (task_id, score ) VALUES (4, 80);
+INSERT INTO task_priority_scores (task_id, score ) VALUES (5, 65);
 
 -- Populate 'task_tshirt_scores' table
-INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale, algorithm_version) VALUES (1, 'M', 'Standard feature implementation with some complexity.', 'v1.0-heuristic');
-INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale, algorithm_version) VALUES (2, 'S', 'Targeted bug fix with a clear scope.', 'v1.0-heuristic');
-INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale, algorithm_version) VALUES (3, 'L', 'Large planning task involving multiple stakeholders.', 'v1.0-heuristic');
-INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale, algorithm_version) VALUES (5, 'XS', 'Simple deployment script execution.', 'v1.0-heuristic');
+INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (1, 'M', 'Standard feature implementation with some complexity.');
+INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (2, 'S', 'Targeted bug fix with a clear scope.');
+INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (3, 'L', 'Large planning task involving multiple stakeholders.');
+INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (5, 'XS', 'Simple deployment script execution.');

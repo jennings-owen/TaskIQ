@@ -31,23 +31,19 @@ CREATE TABLE task_dependencies (
     UNIQUE(task_id, depends_on_task_id)
 );
 
--- Table to store AI-generated priority scores for tasks
+-- Table to store priority scores for tasks
 CREATE TABLE task_priority_scores (
     id INTEGER PRIMARY KEY,
     task_id INTEGER NOT NULL UNIQUE,
     score INTEGER NOT NULL CHECK(score >= 1 AND score <= 100),
-    algorithm_version TEXT,
-    generated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
 );
 
--- Table to store AI-generated T-shirt size estimations for tasks
+-- Table to store T-shirt size estimations for tasks
 CREATE TABLE task_tshirt_scores (
     id INTEGER PRIMARY KEY,
     task_id INTEGER NOT NULL UNIQUE,
     tshirt_size TEXT NOT NULL CHECK(tshirt_size IN ('XS', 'S', 'M', 'L', 'XL')),
     rationale TEXT,
-    algorithm_version TEXT,
-    generated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
 );
