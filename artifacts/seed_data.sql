@@ -20,9 +20,12 @@ INSERT INTO task_priority_scores (task_id, score ) VALUES (2, 95);
 INSERT INTO task_priority_scores (task_id, score ) VALUES (3, 75);
 INSERT INTO task_priority_scores (task_id, score ) VALUES (4, 80);
 INSERT INTO task_priority_scores (task_id, score ) VALUES (5, 65);
+INSERT INTO task_priority_scores (task_id, score ) VALUES (6, 70);
 
 -- Populate 'task_tshirt_scores' table
 INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (1, 'M', 'Standard feature implementation with some complexity.');
 INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (2, 'S', 'Targeted bug fix with a clear scope.');
 INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (3, 'L', 'Large planning task involving multiple stakeholders.');
+INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (4, 'S', 'Standard presentation preparation with clear requirements.');
 INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (5, 'XS', 'Simple deployment script execution.');
+INSERT INTO task_tshirt_scores (task_id, tshirt_size, rationale ) VALUES (6, 'M', 'Analysis and reporting task with moderate complexity.');
