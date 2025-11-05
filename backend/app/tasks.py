@@ -42,9 +42,44 @@ def get_tasks(db: Session = Depends(get_db)):
     return results
 
 
+@router.get("/tasks/{task_id}", response_model=schemas.Task)
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    t = crud.get_task(db, task_id)
+    if not t:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    score = None
+    if getattr(t, "priority_score", None):
+        try:
+            score = int(getattr(t.priority_score, "score", None))
+        except Exception:
+            score = None
+
+    tshirt = None
+    if getattr(t, "tshirt_score", None):
+        try:
+            tshirt = getattr(t.tshirt_score, "tshirt_size", None)
+        except Exception:
+            tshirt = None
+
+    return {
+        "id": t.id,
+        "title": t.title,
+        "description": t.description,
+        "deadline": t.deadline,
+        "estimated_duration": t.estimated_duration or 0,
+        "status": t.status,
+        "priority_score": score or 0,
+        "tshirt_size": tshirt,
+    }
+
+
 @router.post("/tasks", response_model=schemas.Task)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
-    return crud.create_task(db, task)
+    try:
+        return crud.create_task(db, task)
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
 
 
 @router.put("/tasks/{task_id}", response_model=schemas.Task)
