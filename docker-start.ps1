@@ -1,146 +1,107 @@
-# PowerShell script to start Docker containers for SynapseSquad application
+# Docker startup script for production, development, and testing
 # Usage: 
-#   .\docker-start.ps1           # Production build (default)
-#   .\docker-start.ps1 -Dev      # Development with hot-reload
+#   .\docker-start.ps1          # Start production environment
+#   .\docker-start.ps1 -Dev     # Start development environment (with hot-reload)
+#   .\docker-start.ps1 -Test    # Run test suite
 
 param(
-    [switch]$Dev
+    [switch]$Dev,
+    [switch]$Test
 )
 
-Write-Host "=== SynapseSquad Docker Startup Script ===" -ForegroundColor Cyan
-if ($Dev) {
-    Write-Host "Mode: Development (hot-reload enabled)" -ForegroundColor Yellow
-} else {
-    Write-Host "Mode: Production (optimized build)" -ForegroundColor Green
-}
-Write-Host ""
-
-# Check if Docker is installed and running
-Write-Host "Checking Docker installation..." -ForegroundColor Yellow
-try {
-    $dockerVersion = docker --version 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Docker command failed"
-    }
-    Write-Host "Docker found: $dockerVersion" -ForegroundColor Green
-} catch {
-    Write-Host "ERROR: Docker is not installed or not running." -ForegroundColor Red
-    Write-Host "Please install Docker Desktop from: https://www.docker.com/products/docker-desktop" -ForegroundColor Red
-    exit 1
-}
-
-# Check if Docker daemon is running
-Write-Host "Checking Docker daemon..." -ForegroundColor Yellow
-try {
-    docker info 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Docker daemon not running"
-    }
-    Write-Host "Docker daemon is running" -ForegroundColor Green
-} catch {
-    Write-Host "ERROR: Docker Desktop is not running." -ForegroundColor Red
-    Write-Host "Please start Docker Desktop and wait for it to fully initialize." -ForegroundColor Yellow
-    Write-Host "Then run this script again." -ForegroundColor Yellow
-    exit 1
-}
-
-# Check if docker-compose is available
-Write-Host "Checking Docker Compose..." -ForegroundColor Yellow
-try {
-    $composeVersion = docker compose version 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Docker Compose command failed"
-    }
-    Write-Host "Docker Compose found: $composeVersion" -ForegroundColor Green
-} catch {
-    Write-Host "ERROR: Docker Compose is not available." -ForegroundColor Red
-    Write-Host "Please ensure you have Docker Desktop with Compose V2 installed." -ForegroundColor Red
-    exit 1
-}
-
-# Check if .env file exists
-Write-Host ""
-Write-Host "Checking environment configuration..." -ForegroundColor Yellow
-if (-Not (Test-Path ".env")) {
-    Write-Host "WARNING: .env file not found. Using default values." -ForegroundColor Yellow
-    Write-Host "For custom configuration, see ENV_FORMAT.md and create a .env file" -ForegroundColor Yellow
-} else {
-    Write-Host ".env file found" -ForegroundColor Green
-}
-
-# Check if node_modules exists for frontend
-Write-Host ""
-Write-Host "Checking frontend dependencies..." -ForegroundColor Yellow
-if (-Not (Test-Path "frontend\node_modules")) {
-    Write-Host "WARNING: frontend/node_modules not found." -ForegroundColor Yellow
-    Write-Host "Please run 'cd frontend && npm install --legacy-peer-deps' first." -ForegroundColor Yellow
+if ($Test) {
+    # TEST MODE: Run full test suite
+    Write-Host "Starting test suite..." -ForegroundColor Cyan
     Write-Host ""
-    $response = Read-Host "Continue anyway? (y/N)"
-    if ($response -ne "y" -and $response -ne "Y") {
-        Write-Host "Exiting. Please install dependencies first." -ForegroundColor Red
-        exit 1
-    }
-} else {
-    Write-Host "node_modules found - using local packages" -ForegroundColor Green
-}
-
-# Determine which compose file to use
-if ($Dev) {
-    $composeFile = "docker-compose.dev.yml"
-    Write-Host "Using development configuration..." -ForegroundColor Yellow
-} else {
-    $composeFile = "docker-compose.yml"
-    Write-Host "Using production configuration..." -ForegroundColor Yellow
-}
-
-# Stop any existing containers
-Write-Host ""
-Write-Host "Stopping any existing containers..." -ForegroundColor Yellow
-docker compose -f $composeFile down 2>$null
-
-# Clean up corrupted images if any
-Write-Host "Cleaning up old images..." -ForegroundColor Yellow
-docker image prune -f 2>$null | Out-Null
-
-# Build and start containers
-Write-Host ""
-Write-Host "Building and starting containers..." -ForegroundColor Yellow
-Write-Host "This may take a few minutes on first run..." -ForegroundColor Cyan
-if (-not $Dev) {
-    Write-Host "Building production bundle with 'npm run build'..." -ForegroundColor Cyan
-}
-Write-Host ""
-
-docker compose -f $composeFile up --build -d
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Host ""
-    Write-Host "=== Containers started successfully! ===" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "Services are available at:" -ForegroundColor Cyan
-    Write-Host "  Frontend: http://localhost:3000" -ForegroundColor White
-    Write-Host "  Backend:  http://localhost:8000" -ForegroundColor White
-    Write-Host "  API Docs: http://localhost:8000/docs" -ForegroundColor White
-    Write-Host ""
-    if ($Dev) {
-        Write-Host "Development mode: Code changes will hot-reload automatically" -ForegroundColor Cyan
+    
+    # Check if test.db exists
+    if (Test-Path "backend\tests\test.db") {
+        Write-Host "Using existing test.db" -ForegroundColor Green
     } else {
-        Write-Host "Production mode: Optimized build with nginx serving static files" -ForegroundColor Cyan
+        Write-Host "test.db will be auto-generated by conftest.py" -ForegroundColor Yellow
     }
+    
     Write-Host ""
-    Write-Host "Useful commands:" -ForegroundColor Cyan
-    Write-Host "  View logs:        docker compose -f $composeFile logs -f" -ForegroundColor White
-    Write-Host "  Stop containers:  docker compose -f $composeFile down" -ForegroundColor White
-    Write-Host "  Restart:          docker compose -f $composeFile restart" -ForegroundColor White
-    Write-Host "  View status:      docker compose -f $composeFile ps" -ForegroundColor White
+    Write-Host "Running full test suite (192+ tests)..." -ForegroundColor Cyan
+    Write-Host "- Backend: 127+ tests (test_tasks.py, test_ai.py, test_database.py, test_integration.py)" -ForegroundColor Gray
+    Write-Host "- Frontend: 65+ tests (TaskList, TaskForm, Dashboard)" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "Checking container status..." -ForegroundColor Yellow
-    docker compose -f $composeFile ps
+    
+    # Run tests with docker-compose
+    docker-compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from backend-test
+    
+    $testResult = $LASTEXITCODE
+    
+    Write-Host ""
+    if ($testResult -eq 0) {
+        Write-Host "All tests passed!" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "View detailed logs:" -ForegroundColor Gray
+        Write-Host "  docker-compose -f docker-compose.test.yml logs backend-test" -ForegroundColor Gray
+        Write-Host "  docker-compose -f docker-compose.test.yml logs frontend-test" -ForegroundColor Gray
+    } else {
+        Write-Host "Tests failed. View logs for details:" -ForegroundColor Red
+        Write-Host "  docker-compose -f docker-compose.test.yml logs backend-test" -ForegroundColor Gray
+        Write-Host "  docker-compose -f docker-compose.test.yml logs frontend-test" -ForegroundColor Gray
+    }
+    
+    Write-Host ""
+    Write-Host "Cleanup containers:" -ForegroundColor Gray
+    Write-Host "  docker-compose -f docker-compose.test.yml down -v" -ForegroundColor Gray
+    Write-Host ""
+    
+    exit $testResult
+    
+} elseif ($Dev) {
+    # DEVELOPMENT MODE: Hot-reload, mounted volumes
+    Write-Host "Starting development environment..." -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Features:" -ForegroundColor Gray
+    Write-Host "  - Hot-reload enabled" -ForegroundColor Gray
+    Write-Host "  - Code changes reflected immediately" -ForegroundColor Gray
+    Write-Host "  - Volumes mounted for live editing" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Services:" -ForegroundColor Gray
+    Write-Host "  - Backend:  http://localhost:8000" -ForegroundColor Gray
+    Write-Host "  - Frontend: http://localhost:3000" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Press Ctrl+C to stop..." -ForegroundColor Yellow
+    Write-Host ""
+    
+    # Start development environment with docker-compose
+    docker-compose up --build
+    
+    # Cleanup on exit
+    Write-Host ""
+    Write-Host "Stopping services..." -ForegroundColor Yellow
+    docker-compose down
+    
 } else {
+    # PRODUCTION MODE: Optimized build, no volumes
+    Write-Host "Starting production environment..." -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "ERROR: Failed to start containers." -ForegroundColor Red
-    Write-Host "Check the logs above for details." -ForegroundColor Red
-    Write-Host "You can also run: docker compose logs" -ForegroundColor Yellow
-    exit 1
+    Write-Host "Features:" -ForegroundColor Gray
+    Write-Host "  - Optimized production build" -ForegroundColor Gray
+    Write-Host "  - No hot-reload" -ForegroundColor Gray
+    Write-Host "  - Production-ready configuration" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Services:" -ForegroundColor Gray
+    Write-Host "  - Backend:  http://localhost:8000" -ForegroundColor Gray
+    Write-Host "  - Frontend: http://localhost:3000" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Press Ctrl+C to stop..." -ForegroundColor Yellow
+    Write-Host ""
+    
+    # Start production environment
+    docker-compose up --build -d
+    
+    Write-Host ""
+    Write-Host "Services started in detached mode" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "View logs:" -ForegroundColor Gray
+    Write-Host "  docker-compose logs -f" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "Stop services:" -ForegroundColor Gray
+    Write-Host "  docker-compose down" -ForegroundColor Gray
+    Write-Host ""
 }
-

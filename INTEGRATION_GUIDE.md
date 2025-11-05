@@ -281,3 +281,231 @@ Finally, run both the backend and frontend servers at the same time and use both
     ```
 
 Your browser will open to `http://localhost:3000`, and you should see a fully integrated application where you can create users and see the list update instantly.
+
+---
+
+## Step 6: Testing Your Integration 🧪
+
+### Running Unit Tests
+
+Once your integration is complete, verify everything works with automated tests:
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Run all tests
+pytest -v
+
+# Run tests with coverage report
+pytest --cov=backend --cov-report=html
+
+# View coverage report
+start htmlcov/index.html  # Windows
+open htmlcov/index.html   # macOS
+```
+
+### Test Structure
+
+The project includes comprehensive test suites:
+
+```
+backend/tests/
+├── conftest.py          # Test fixtures and database setup
+├── test_tasks.py        # Task CRUD endpoint tests
+└── test_ai.py           # AI endpoint tests
+```
+
+### What the Tests Cover
+
+- **CRUD Operations**: Create, Read, Update, Delete for tasks
+- **AI Endpoints**: Priority ranking and T-shirt size recommendation
+- **Error Handling**: 404s, validation errors, edge cases
+- **Performance**: Verifies response times < 200ms
+- **Edge Cases**: Empty inputs, negative values, boundary conditions
+
+### Example Test Run
+
+```bash
+$ pytest -v
+
+tests/test_tasks.py::TestTasksCRUD::test_get_tasks_empty PASSED
+tests/test_tasks.py::TestTasksCRUD::test_create_task_success PASSED
+tests/test_tasks.py::TestTasksCRUD::test_update_task_success PASSED
+tests/test_ai.py::TestAIRankEndpoint::test_rank_tasks_success PASSED
+tests/test_ai.py::TestAISizeEndpoint::test_size_recommendation_success PASSED
+
+==================== 50 passed in 2.34s ====================
+```
+
+### Integration Testing Checklist
+
+Use the comprehensive checklist to manually test the integration:
+
+📋 See [Integration Test Checklist](docs/INTEGRATION_TEST_CHECKLIST.md)
+
+---
+
+## Step 7: Security Considerations 🔒
+
+### Built-in Security Features
+
+The application includes several security measures:
+
+1. **Input Validation**: Pydantic schemas validate all user inputs
+2. **CORS Configuration**: Restricts API access to configured origins
+3. **SQL Injection Protection**: SQLAlchemy ORM prevents SQL injection
+4. **Error Handling**: Generic error messages prevent information leakage
+
+### Security Scanning
+
+The project includes automated security scanning:
+
+```bash
+# Run security scan (requires bandit and safety installed)
+pip install bandit safety
+
+# Scan Python code for security issues
+bandit -r backend
+
+# Check for vulnerable dependencies
+safety check
+```
+
+### Known Limitations (MVP)
+
+⚠️ **Important**: This MVP does not include authentication/authorization.
+
+- Suitable for demo and development only
+- Deploy only in trusted/internal environments
+- Add authentication before production use
+
+See [Security Review](docs/SECURITY_REVIEW.md) for complete security assessment.
+
+---
+
+## Step 8: CI/CD Integration 🔄
+
+### GitHub Actions Workflows
+
+The project includes automated CI/CD pipelines:
+
+**Main CI/CD Pipeline** (`.github/workflows/ci.yml`):
+- Runs tests on every push and pull request
+- Generates coverage reports
+- Validates Docker builds
+- Performs integration testing
+
+**Security Scan** (`.github/workflows/security.yml`):
+- Automated security scanning (Bandit, Safety, CodeQL)
+- Dependency vulnerability checks
+- Secret detection with TruffleHog
+- Weekly scheduled scans
+
+### Viewing Workflow Results
+
+1. Go to your GitHub repository
+2. Click the **Actions** tab
+3. View workflow runs and results
+4. Download artifacts (coverage reports, security scans)
+
+### Local CI/CD Testing
+
+Test the CI/CD pipeline locally before pushing:
+
+```bash
+# Run all tests
+pytest -v
+
+# Check code quality
+flake8 backend
+
+# Run security scan
+bandit -r backend
+safety check
+
+# Build Docker images
+docker-compose build
+
+# Test full stack
+docker-compose up
+```
+
+---
+
+## Troubleshooting Common Integration Issues 🔧
+
+### CORS Errors
+
+**Symptom**: Console shows "CORS policy" errors
+
+**Solution**:
+1. Verify `FRONT_END_URL` in `.env` matches frontend URL
+2. Check CORS middleware is configured in `backend/main.py`
+3. Restart backend server after changing `.env`
+
+### Connection Refused
+
+**Symptom**: Frontend can't connect to backend
+
+**Solution**:
+1. Verify backend is running: `curl http://localhost:8000/status`
+2. Check `REACT_APP_BACK_END_URL` in frontend `.env`
+3. Ensure ports aren't blocked by firewall
+
+### Tests Failing
+
+**Symptom**: `pytest` shows failures
+
+**Solution**:
+1. Check database models are imported correctly
+2. Verify fixtures in `conftest.py`
+3. Run tests with verbose output: `pytest -vv`
+4. Check specific test: `pytest tests/test_tasks.py::test_name -v`
+
+### Docker Issues
+
+**Symptom**: Containers won't start
+
+**Solution**:
+```bash
+# View logs
+docker-compose logs
+
+# Rebuild from scratch
+docker-compose down
+docker-compose build --no-cache
+docker-compose up
+```
+
+---
+
+## Additional Resources 📚
+
+### Documentation
+
+- [API Reference](docs/API_REFERENCE.md) - Complete API documentation
+- [Testing Guide](docs/TESTING_GUIDE.md) - Detailed testing instructions
+- [Security Review](docs/SECURITY_REVIEW.md) - Security assessment
+- [PRD](docs/PRD.md) - Product requirements
+
+### External Resources
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [React Documentation](https://react.dev/)
+- [Axios Documentation](https://axios-http.com/)
+- [Pytest Documentation](https://docs.pytest.org/)
+
+---
+
+## Next Steps 🚀
+
+Now that your integration is complete:
+
+1. ✅ Run the full test suite
+2. ✅ Review security considerations
+3. ✅ Test the application end-to-end
+4. ✅ Review API documentation
+5. ✅ Prepare for demo presentation
+
+**Congratulations!** You've successfully integrated your React frontend with your FastAPI backend using AI-assisted development techniques.
