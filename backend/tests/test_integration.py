@@ -573,3 +573,4 @@ class TestErrorHandlingIntegration:
         assert final_response.status_code == 200
         assert final_response.json()["status"] in ["in_progress", "completed"]
 
+

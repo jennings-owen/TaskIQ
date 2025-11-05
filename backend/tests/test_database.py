@@ -589,3 +589,4 @@ class TestReferentialIntegrity:
                       (sample_tasks[0]['id'],))
         assert cursor.fetchone()[0] == 0
 
+
