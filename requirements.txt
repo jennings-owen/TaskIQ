@@ -3,6 +3,7 @@ uvicorn
 python-dotenv
 watchfiles
 sqlalchemy
+alembic
 pydantic
 pytest
 pytest-asyncio
