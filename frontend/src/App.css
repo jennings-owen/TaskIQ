@@ -106,3 +106,47 @@
   /* fill: #ffffff; */
   stroke: var(--accent); /* lucide-react uses stroke for SVG icons */
 }
+
+/* Mobile responsiveness for task page */
+@media (max-width: 1023px) {
+  .task-list-mobile {
+    max-height: 320px;
+  }
+  
+  .task-details-mobile {
+    min-height: 400px;
+  }
+}
+
+/* Responsive container adjustments */
+.container {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Line clamp utilities for text truncation */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.line-clamp-none {
+  overflow: visible;
+  display: block;
+  -webkit-box-orient: initial;
+  -webkit-line-clamp: initial;
+  line-clamp: initial;
+}

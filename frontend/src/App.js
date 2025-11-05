@@ -159,18 +159,22 @@ function App() {
         );
       case 'tasks':
         return (
-          <div className="flex gap-6 h-full overflow-hidden">
-            <TaskList 
-              tasks={tasks} 
-              selectedTask={selectedTask}
-              onSelectTask={setSelectedTask}
-              onCreateTask={handleCreateTask}
-            />
-            <TaskDetailsPanel 
-              task={selectedTask}
-              onUpdateTask={handleUpdateTask}
-              onDeleteTask={handleDeleteTask}
-            />
+          <div className="flex flex-col lg:flex-row gap-6 h-full overflow-hidden">
+            <div className="lg:w-[400px] w-full">
+              <TaskList 
+                tasks={tasks} 
+                selectedTask={selectedTask}
+                onSelectTask={setSelectedTask}
+                onCreateTask={handleCreateTask}
+              />
+            </div>
+            <div className="flex-1">
+              <TaskDetailsPanel 
+                task={selectedTask}
+                onUpdateTask={handleUpdateTask}
+                onDeleteTask={handleDeleteTask}
+              />
+            </div>
           </div>
         );
       case 'ai-tools':
@@ -219,7 +223,7 @@ function App() {
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-3 lg:p-6 overflow-auto">
           <div className="container">
             {renderMainContent()}
           </div>

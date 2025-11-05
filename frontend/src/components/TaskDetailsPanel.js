@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Trash2, Sparkles } from 'lucide-react';
+import { Trash2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -11,7 +11,6 @@ import { Badge } from './ui/badge';
 
 export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
   const [editedTask, setEditedTask] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (task) {
@@ -21,7 +20,7 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
 
   if (!task || !editedTask) {
     return (
-      <div className="flex-1 bg-white rounded-lg border border-slate-200 flex items-center justify-center">
+      <div className="flex-1 bg-white rounded-lg border border-slate-200 flex items-center justify-center min-h-64 lg:min-h-0">
         <div className="text-center text-slate-400">
           <p>Select a task to view details</p>
         </div>
@@ -51,21 +50,11 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
 
   return (
     <div className="flex-1 bg-white rounded-lg border border-slate-200 flex flex-col">
-      <div className="p-6 border-b border-slate-200">
-        <h2 className="text-slate-900 mb-4">Task Details & Actions</h2>
-        
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+      <div className="p-4 lg:p-6 border-b border-slate-200">
+        <h2 className="text-lg lg:text-xl text-slate-900">Task Details & Actions</h2>
       </div>
 
-      <div className="flex-1 overflow-auto p-6 space-y-6">
+      <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-4 lg:space-y-6">
         <div className="space-y-2">
           <Label>Title</Label>
           <Input
@@ -79,25 +68,27 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
           <Textarea
             value={editedTask.description}
             onChange={(e) => setEditedTask({ ...editedTask, description: e.target.value })}
-            rows={4}
+            rows={3}
+            className="resize-none lg:min-h-24"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select
-            value={editedTask.status}
-            onValueChange={(value) => 
-              setEditedTask({ ...editedTask, status: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="in-progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select
+              value={editedTask.status}
+              onValueChange={(value) => 
+                setEditedTask({ ...editedTask, status: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -109,6 +100,7 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
             value={editedTask.deadline}
             onChange={(e) => setEditedTask({ ...editedTask, deadline: e.target.value })}
           />
+        </div>
         </div>
 
         <div className="space-y-2">
@@ -137,14 +129,14 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
 
         <div className="space-y-2">
           <Label>T-Shirt Size (Complexity)</Label>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {(['XS', 'S', 'M', 'L', 'XL']).map((size) => (
               <Button
                 key={size}
                 type="button"
                 variant={editedTask.tshirt_size === size ? 'default' : 'outline'}
                 size="sm"
-                className="flex-1"
+                className="text-xs lg:text-sm"
                 onClick={() => setEditedTask({ ...editedTask, tshirt_size: size })}
               >
                 {size}
@@ -168,16 +160,16 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
         </div>
 
         {/* AI Priority Score Info */}
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="p-3 lg:p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4 text-blue-600" />
-            <Label className="text-blue-900">AI Priority Score</Label>
+            <Label className="text-blue-900 text-sm lg:text-base">AI Priority Score</Label>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="text-lg px-3 py-1">
+            <Badge variant="outline" className="text-base lg:text-lg px-2 lg:px-3 py-1">
               {editedTask.priority_score}
             </Badge>
-            <span className="text-sm text-blue-700">
+            <span className="text-xs lg:text-sm text-blue-700">
               {getPriorityLevel(editedTask.priority_score)} Priority
             </span>
           </div>
@@ -187,13 +179,14 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
         </div>
       </div>
 
-      <div className="p-6 border-t border-slate-200 flex gap-3">
+      <div className="p-4 lg:p-6 border-t border-slate-200 flex flex-col lg:flex-row gap-3">
         <Button onClick={handleSave} className="flex-1">
           <Sparkles className="w-4 h-4 mr-2" />
           Save Changes
         </Button>
-        <Button onClick={handleDelete} variant="destructive" size="icon">
-          <Trash2 className="w-4 h-4" />
+        <Button onClick={handleDelete} variant="destructive" className="lg:w-auto">
+          <Trash2 className="w-4 h-4 lg:mr-2" />
+          <span className="lg:inline hidden">Delete</span>
         </Button>
       </div>
     </div>
