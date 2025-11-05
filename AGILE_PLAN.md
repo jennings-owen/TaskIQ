@@ -20,7 +20,7 @@
 
 ---
 
-### Member 2: Backend Development (FastAPI) (Lawrence)
+### Member 2: Backend Development (FastAPI) (Kristy)
 - [ ] Set up FastAPI project structure.
 - [ ] Implement CRUD endpoints for `/tasks` (GET, POST, PUT, DELETE).
 - [ ] Implement `/ai/rank` endpoint for task priority scoring.
@@ -43,7 +43,7 @@
 
 ---
 
-### Member 4: Integration, Testing, and Documentation 
+### Member 4: Integration, Testing, and Documentation (Lawrence)
 - [ ] Write unit tests for backend endpoints (pytest).
 - [ ] Test API integration with frontend (manual & automated).
 - [ ] Identify and document security vulnerabilities.
