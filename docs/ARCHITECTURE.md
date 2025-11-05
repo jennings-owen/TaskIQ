@@ -88,8 +88,16 @@ Frontend --> User : Rendered Data
 4. AI endpoints provide task ranking and T-shirt size recommendations
 
 ## 6. Database Schema
-[To be completed after schema.sql is ready]
-See PRD Section 11 for planned schema and field descriptions.
+The finalized schema is available at `backend/schema.sql` and the seeded SQLite database is `backend/team_synapse.db`.
+
+Short summary of tables (see `backend/schema.sql` for full DDL):
+- `users` (id, name, email, password_hash, created_at)
+- `tasks` (id, user_id → users.id, title, description, deadline, estimated_duration, status, created_at, updated_at)
+- `task_dependencies` (id, task_id → tasks.id, depends_on_task_id → tasks.id)
+- `task_priority_scores` (id, task_id → tasks.id, score)
+- `task_tshirt_scores` (id, task_id → tasks.id, tshirt_size, rationale)
+
+Foreign keys and constraints are enforced in the DDL (ON DELETE CASCADE and CHECK constraints for status/size fields).
 
 ## 7. Security Considerations
 - CORS enabled for frontend-backend integration

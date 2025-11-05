@@ -14,9 +14,9 @@
 | PRD_AI_DRAFT.md | [Draft](./PRD_AI_DRAFT.md) | This is the original AI generated PRD document. It serves as the baseline for this final PRD document. |
 | SETUP.md | [Setup](./SETUP.md) | Information about environment setup, docker usage, and deployment. |
 | AGILE_PLAN.md | [Plan](./AGILE_PLAN.md) | This document outlines all the tasks required to complete a MVP. |
-| schema.sql | [Schema](../artifacts//schema.sql) | The initial SQLite schema file based on the constraints defined in this PRD. |
-| seed_data.sql | [Data](../artifacts/seed_data.sql)| The SQL data used to populate the database. |
-| team_synapse.db | [Database](../artifacts/team_synapse.db)| The SQL database. |
+| schema.sql | [Schema](../backend/schema.sql) | The initial SQLite schema file based on the constraints defined in this PRD. |
+| seed_data.sql | [Data](../backend/seed_data.sql)| The SQL data used to populate the database. |
+| team_synapse.db | [Database](../backend/team_synapse.db)| The SQL database. |
 | ARCHITECTURE.md | [Architecture](./architecture.md) | Architecture design including UML diagrams. |
 | ADR.md | [Architecture Design Record](./ADR.md) | Technical decisions with their justifications. |
 | UI/Wireframes | See /ui/ Folder | Draft UI generated using lab workflow, wireframes generated using Figma design. |
@@ -192,41 +192,8 @@ Response:
 | tshirt_size       | TEXT     | NOT NULL                  | XS / S / M / L / XL          |
 | rationale         | TEXT     | NULLABLE                  | AI explanation or reasoning  |
 
-## 12. Sample Project Directory Format (MVP)
 
-```bash
-task-manager/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI entrypoint
-│   │   ├── models.py            # SQLAlchemy models
-│   │   ├── schemas.py           # Pydantic schemas
-│   │   ├── crud.py              # CRUD operations
-│   │   ├── api/
-│   │   │   ├── tasks.py         # Task endpoints
-│   │   │   ├── ai.py            # AI endpoints (/rank, /size)
-│   │   │   └── dependencies.py  # Dependency endpoints
-│   │   └── database.py          # DB connection / session
-│   ├── requirements.txt
-│   └── alembic/                 # Optional for migrations
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.js
-│   │   ├── components/
-│   │   │   ├── TaskList.jsx
-│   │   │   ├── TaskForm.jsx
-│   │   │   └── Dashboard.jsx
-│   │   ├── api/
-│   │   │   └── index.js         # Axios API calls
-│   │   └── utils/
-│   └── package.json
-│
-├── README.md
-└── .env                         # Environment variables
-```
-
-## 13. Documentation Requirements
+## 12. Documentation Requirements
 
 - [**Architecture Document**](docs/ARCHITECTURE.md): System architecture overview with PlantUML diagrams (component and sequence) showing React frontend, FastAPI backend, SQLite database, and API interactions. Reference Section 10 (API Design) and Section 11 (Database Schema).
 
@@ -238,7 +205,7 @@ task-manager/
 
 - [**AI Artifact Log**](docs/AI_GENERATION_LOG.md): Comprehensive record of AI prompts and outputs for PRD generation, schema.sql creation, API code generation, test suite creation, and security audit. Demonstrates AI integration across SDLC.
 
-## 14. Testing Suite
+## 13. Testing Suite
 
 - [**Backend Unit Tests**](backend/tests/test_main.py): Pytest suite covering all CRUD endpoints (Section 10), AI ranking logic with edge cases (line 119 algorithm validation), size recommendation endpoint, and database operations across all 5 tables (Section 11). 
 
