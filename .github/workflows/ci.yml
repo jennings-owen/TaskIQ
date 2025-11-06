@@ -1,5 +1,10 @@
 name: CI/CD Pipeline
 
+# Continuous Integration and Deployment pipeline
+# Runs comprehensive test suite via Docker containers
+# Includes: Backend tests, Frontend tests, Coverage reporting
+# Triggers: Push to main, master, or develop branches
+
 on:
   push:
     branches: [ main, master, develop ]

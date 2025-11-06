@@ -1,5 +1,10 @@
 name: Security Scan
 
+# Security scanning workflow for vulnerability detection and code analysis
+# Runs on: push to main branches, pull requests, weekly schedule, and manual trigger
+# Tools: Bandit, Safety, pip-audit, TruffleHog, CodeQL, Trivy
+# Note: Configured as soft gate for learning environment
+
 on:
   push:
     branches: [ main, master, develop ]
@@ -39,8 +44,8 @@ jobs:
     - name: Run Bandit (Python Security Linter)
       run: |
         echo "Running Bandit security scan..."
-        bandit -r backend -f json -o bandit-report.json || true
-        bandit -r backend -f txt
+        bandit -r backend -c .banditrc -f json -o bandit-report.json || true
+        bandit -r backend -c .banditrc -f txt
       continue-on-error: true
     
     - name: Run Safety (Dependency Vulnerability Check)
@@ -95,28 +100,38 @@ jobs:
       run: |
         echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Bandit Results" >> $GITHUB_STEP_SUMMARY
+        echo "### Scan Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Tool | Status | Description |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
+        
         if [ -f bandit-report.json ]; then
-          echo "✅ Bandit scan completed" >> $GITHUB_STEP_SUMMARY
+          echo "| Bandit | PASS | Python security linter completed |" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ Bandit scan failed" >> $GITHUB_STEP_SUMMARY
+          echo "| Bandit | FAIL | Python security linter failed |" >> $GITHUB_STEP_SUMMARY
         fi
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Safety Results" >> $GITHUB_STEP_SUMMARY
+        
         if [ -f safety-report.json ]; then
-          echo "✅ Safety check completed" >> $GITHUB_STEP_SUMMARY
+          echo "| Safety | PASS | Dependency vulnerability check completed |" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ Safety check failed" >> $GITHUB_STEP_SUMMARY
+          echo "| Safety | FAIL | Dependency vulnerability check failed |" >> $GITHUB_STEP_SUMMARY
         fi
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### pip-audit Results" >> $GITHUB_STEP_SUMMARY
+        
         if [ -f pip-audit-report.json ]; then
-          echo "✅ pip-audit scan completed" >> $GITHUB_STEP_SUMMARY
+          echo "| pip-audit | PASS | Package vulnerability scan completed |" >> $GITHUB_STEP_SUMMARY
         else
-          echo "❌ pip-audit scan failed" >> $GITHUB_STEP_SUMMARY
+          echo "| pip-audit | FAIL | Package vulnerability scan failed |" >> $GITHUB_STEP_SUMMARY
         fi
+        
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "📊 Download detailed reports from the artifacts section above." >> $GITHUB_STEP_SUMMARY
+        echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "Detailed security reports are available in the artifacts section above." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Download and review security report artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "2. Address HIGH and CRITICAL severity issues" >> $GITHUB_STEP_SUMMARY
+        echo "3. Update vulnerable dependencies" >> $GITHUB_STEP_SUMMARY
+        echo "4. Review code issues identified by static analysis" >> $GITHUB_STEP_SUMMARY
 
   dependency-review:
     name: Dependency Review
@@ -202,6 +217,6 @@ jobs:
       run: |
         echo "Security scans completed."
         echo "Review the security reports in the artifacts section."
-        echo "⚠️  Note: This is a soft gate. Critical issues should be addressed before merging."
+        echo "NOTE: This is a soft gate for learning purposes. Critical issues should be addressed before merging to production."
 
 

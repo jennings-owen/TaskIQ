@@ -178,15 +178,15 @@ Recommended settings:
 
 1. Go to Settings → Branches
 2. Add rule for `main` branch:
-   - ✅ Require status checks to pass
-   - ✅ Require branches to be up to date
+   - Require status checks to pass
+   - Require branches to be up to date
    - Select required checks:
      - Backend Tests
      - Frontend Tests
      - Security Quick Check
      - Integration Tests
-   - ✅ Require pull request reviews
-   - ✅ Dismiss stale reviews
+   - Require pull request reviews
+   - Dismiss stale reviews
 
 ## Performance
 

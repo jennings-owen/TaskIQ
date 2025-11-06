@@ -39,7 +39,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 - All values have defaults - **.env is optional for development**
 - **SECRET_KEY**: Has a default dev value; set custom value for production
 - Change ports if 3000 or 8000 are already in use
-- After changing values, run: `.\docker-rebuild.ps1`
+- After changing values, rebuild: `docker-compose build --no-cache && docker-compose up -d`
 
 ## Manual Setup (Without Docker)
 

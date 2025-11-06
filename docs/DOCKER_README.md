@@ -88,17 +88,16 @@ For active development with automatic code reloading:
 
 When you need to rebuild from scratch (after changing environment variables, Dockerfiles, or dependencies):
 
-```powershell
-# Windows
-.\docker-rebuild.ps1           # Production rebuild
-.\docker-rebuild.ps1 -Dev      # Development rebuild
+```bash
+# Force rebuild without cache
+docker-compose build --no-cache
+docker-compose up -d
 
-# Linux/macOS
-./docker-rebuild.sh
-./docker-rebuild.sh --dev
+# Or rebuild and start in one command
+docker-compose up --build --force-recreate
 ```
 
-**When to use docker-rebuild:**
+**When to rebuild:**
 - Changed environment variables (REACT_APP_BACK_END_URL)
 - Modified Dockerfile
 - Updated package.json or requirements.txt
@@ -108,11 +107,8 @@ When you need to rebuild from scratch (after changing environment variables, Doc
 ### Manual Docker Compose
 
 ```bash
-# Production mode
+# Start containers
 docker compose up --build -d
-
-# Development mode
-docker compose -f docker-compose.dev.yml up --build -d
 
 # View logs
 docker compose logs -f
@@ -188,8 +184,9 @@ FRONT_END_URL=http://localhost:3001
 ```
 
 Then rebuild:
-```powershell
-.\docker-rebuild.ps1
+```bash
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
 ## Accessing the Application
@@ -578,9 +575,6 @@ kill <PID>
 docker compose down
 docker compose build --no-cache frontend
 docker compose up -d
-
-# Or use the rebuild script
-.\docker-rebuild.ps1
 ```
 
 **Verify backend URL is correct**:
@@ -599,9 +593,8 @@ docker compose up -d
 ### Hot-Reload Not Working (Dev Mode)
 
 **Solution**:
-1. Verify using dev mode: `.\docker-start.ps1 -Dev`
-2. Check volume mounts: `docker compose -f docker-compose.dev.yml ps`
-3. Restart containers: `docker compose -f docker-compose.dev.yml restart`
+1. Check volume mounts: `docker compose ps`
+2. Restart containers: `docker compose restart`
 
 ### Build Fails - "gid '1000' in use"
 
@@ -610,11 +603,12 @@ docker compose up -d
 **Cause**: Alpine Linux base image already has a group with GID 1000
 
 **Solution**: This has been fixed in the Dockerfiles. If you still see this error:
-```powershell
+```bash
 # Clean and rebuild
 docker compose down
 docker system prune -f
-.\docker-rebuild.ps1
+docker compose build --no-cache
+docker compose up -d
 ```
 
 The Dockerfiles now use `|| true` to ignore this error and use numeric UID/GID directly.
@@ -639,8 +633,7 @@ docker system prune -a --volumes -f
 |--------|---------|----------|
 | `.\docker-start.ps1` | Normal startup (uses cache) | Daily use, restarting containers |
 | `.\docker-start.ps1 -Dev` | Development mode (hot-reload) | Active development |
-| `.\docker-rebuild.ps1` | Force rebuild (no cache) | After config changes, fixing issues |
-| `.\docker-rebuild.ps1 -Dev` | Dev mode rebuild | After dev config changes |
+| `docker-compose build --no-cache` | Force rebuild (no cache) | After config changes, fixing issues |
 
 ### Common Commands
 
@@ -652,7 +645,8 @@ docker system prune -a --volumes -f
 .\docker-start.ps1 -Dev
 
 # Rebuild containers (after changes)
-.\docker-rebuild.ps1
+docker-compose build --no-cache
+docker-compose up -d
 
 # View logs (follow mode)
 docker compose logs -f
@@ -699,16 +693,19 @@ cd ..
 docker compose down
 
 # After changing environment variables
-.\docker-rebuild.ps1
+docker-compose build --no-cache
+docker-compose up -d
 
 # After updating dependencies
 cd frontend
 npm install --legacy-peer-deps
 cd ..
-.\docker-rebuild.ps1
+docker-compose build --no-cache
+docker-compose up -d
 
 # Troubleshooting connection issues
-.\docker-rebuild.ps1
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
 ## Summary

@@ -1,5 +1,10 @@
 name: Run Tests
 
+# Unit test workflow with Python version matrix testing
+# Tests backend functionality across Python 3.10, 3.11, and 3.12
+# Includes coverage reporting to Codecov
+# Triggers: Push and pull requests to main and develop branches
+
 on:
   push:
     branches: [ main, develop ]
@@ -53,6 +58,10 @@ jobs:
       if: always()
       run: |
         echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "Python Version: ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
-        echo "Tests completed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Python Version:** ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** Tests completed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Coverage reports uploaded to Codecov for Python 3.12" >> $GITHUB_STEP_SUMMARY
 

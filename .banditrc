@@ -1,0 +1,44 @@
+[bandit]
+# Bandit configuration file for security scanning
+# https://bandit.readthedocs.io/en/latest/config.html
+
+# Exclude paths from scanning
+exclude_dirs = [
+    '/tests/',
+    '/test/',
+    '/.venv/',
+    '/venv/',
+    '/env/',
+    '/.git/',
+    '/__pycache__/',
+    '/node_modules/',
+    '/build/',
+    '/dist/'
+]
+
+# Test IDs to skip (use sparingly and document why)
+# Example: B101 (assert_used) - commonly used in test files
+skips = []
+
+# Severity level threshold
+# Options: LOW, MEDIUM, HIGH
+# Only report issues at or above this level
+# For learning environments, report all levels
+# severity = LOW
+
+# Confidence level threshold
+# Options: LOW, MEDIUM, HIGH
+# Only report issues at or above this confidence level
+# confidence = LOW
+
+# Tests to run (empty means run all)
+tests = []
+
+# Maximum number of lines to report per file
+# max_lines = 1000
+
+# Output format options
+# Available: csv, custom, html, json, screen, txt, xml, yaml
+# Set in CI/CD pipeline, not here
+# format = json
+
