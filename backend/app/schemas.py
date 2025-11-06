@@ -60,6 +60,8 @@ class TaskUpdate(BaseModel):
     deadline: Optional[datetime] = None
     estimated_duration: Optional[int] = None
     status: Optional[str] = None
+    priority_score: Optional[int] = None
+    tshirt_size: Optional[str] = None
 
     @validator("status")
     def validate_status(cls, v):
@@ -67,6 +69,21 @@ class TaskUpdate(BaseModel):
             allowed_statuses = ["pending", "in_progress", "completed", "blocked"]
             if v not in allowed_statuses:
                 raise ValueError(f"Status must be one of: {', '.join(allowed_statuses)}")
+        return v
+
+    @validator("tshirt_size")
+    def validate_tshirt_size(cls, v):
+        if v is not None:
+            allowed_sizes = ["XS", "S", "M", "L", "XL"]
+            if v not in allowed_sizes:
+                raise ValueError(f"T-shirt size must be one of: {', '.join(allowed_sizes)}")
+        return v
+
+    @validator("priority_score")
+    def validate_priority_score(cls, v):
+        if v is not None:
+            if not (1 <= v <= 100):
+                raise ValueError("Priority score must be between 1 and 100")
         return v
 
     @validator("deadline", pre=True)
@@ -116,17 +133,42 @@ class AISizeResponse(BaseModel):
 class UserCreate(BaseModel):
     name: str
     email: str
-    password_hash: Optional[str] = None
+    password: str
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserRegister(BaseModel):
+    name: str
+    email: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
 
 class User(BaseModel):
     id: int
     name: str
     email: str
-    password_hash: Optional[str] = None
+    is_active: bool
     created_at: Optional[datetime] = None
     class Config:
         orm_mode = True
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class UserProfileUpdate(BaseModel):
+    name: str
+    email: str
 
 
 class TaskDependencyCreate(BaseModel):

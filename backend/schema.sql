@@ -3,7 +3,8 @@ CREATE TABLE users (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT,
+    password_hash TEXT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

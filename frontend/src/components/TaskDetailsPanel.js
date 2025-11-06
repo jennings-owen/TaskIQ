@@ -15,7 +15,13 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
 
   useEffect(() => {
     if (task) {
-      setEditedTask(task);
+      // Ensure priority_score has a valid value
+      const taskWithDefaults = {
+        ...task,
+        priority_score: task.priority_score || 50, // Default to 50 if not set
+        tshirt_size: task.tshirt_size || 'M' // Default to M if not set
+      };
+      setEditedTask(taskWithDefaults);
       setIsEditing(false); // Reset to view mode when task changes
     }
   }, [task]);
@@ -150,12 +156,12 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Priority Score</Label>
-                <Badge variant={editedTask.priority_score >= 70 ? 'destructive' : editedTask.priority_score >= 40 ? 'default' : 'secondary'}>
-                  {getPriorityLevel(editedTask.priority_score)}
+                <Badge variant={(editedTask.priority_score || 50) >= 70 ? 'destructive' : (editedTask.priority_score || 50) >= 40 ? 'default' : 'secondary'}>
+                  {getPriorityLevel(editedTask.priority_score || 50)}
                 </Badge>
               </div>
               <Slider
-                value={[editedTask.priority_score]}
+                value={[editedTask.priority_score || 50]}
                 onValueChange={([value]) => 
                   setEditedTask({ ...editedTask, priority_score: value })
                 }
@@ -165,7 +171,7 @@ export function TaskDetailsPanel({ task, onUpdateTask, onDeleteTask }) {
               />
               <div className="flex items-center justify-between text-sm text-slate-500">
                 <span>Low (1)</span>
-                <span className="text-slate-900 font-medium">{editedTask.priority_score}</span>
+                <span className="text-slate-900 font-medium">{editedTask.priority_score || 50}</span>
                 <span>High (100)</span>
               </div>
             </div>

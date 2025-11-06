@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, CheckConstraint
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, CheckConstraint, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -8,7 +8,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
-    password_hash = Column(String)
+    password_hash = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
     created_at = Column(String, default=datetime.utcnow)
     tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
 

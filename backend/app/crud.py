@@ -7,6 +7,10 @@ def get_tasks(db: Session) -> List[models.Task]:
     return db.query(models.Task).all()
 
 
+def get_tasks_by_user(db: Session, user_id: int) -> List[models.Task]:
+    return db.query(models.Task).filter(models.Task.user_id == user_id).all()
+
+
 def get_task(db: Session, task_id: int) -> Optional[models.Task]:
     return db.query(models.Task).filter(models.Task.id == task_id).first()
 
@@ -70,8 +74,42 @@ def update_task(db: Session, task_id: int, task: schemas.TaskUpdate) -> Optional
     db_task = get_task(db, task_id)
     if not db_task:
         return None
-    for key, value in task.dict(exclude_unset=True).items():
+    
+    # Get the task data as dict and extract special fields
+    task_data = task.dict(exclude_unset=True)
+    priority_score = task_data.pop('priority_score', None)
+    tshirt_size = task_data.pop('tshirt_size', None)
+    
+    # Update main task fields
+    for key, value in task_data.items():
         setattr(db_task, key, value)
+    
+    # Update priority score if provided
+    if priority_score is not None:
+        if db_task.priority_score:
+            # Update existing priority score
+            db_task.priority_score.score = priority_score
+        else:
+            # Create new priority score
+            priority_score_obj = models.TaskPriorityScore(
+                task_id=task_id,
+                score=priority_score
+            )
+            db.add(priority_score_obj)
+    
+    # Update t-shirt size if provided
+    if tshirt_size is not None:
+        if db_task.tshirt_score:
+            # Update existing t-shirt score
+            db_task.tshirt_score.tshirt_size = tshirt_size
+        else:
+            # Create new t-shirt score
+            tshirt_score_obj = models.TaskTShirtScore(
+                task_id=task_id,
+                tshirt_size=tshirt_size
+            )
+            db.add(tshirt_score_obj)
+    
     db.add(db_task)
     db.commit()
     db.refresh(db_task)

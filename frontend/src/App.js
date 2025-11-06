@@ -4,11 +4,16 @@ import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import { TaskList } from './components/TaskList';
 import { TaskDetailsPanel } from './components/TaskDetailsPanel';
+import UserProfileSettings from './components/UserProfileSettings';
+import SystemStatus from './components/SystemStatus';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-function App() {
-  const [selectedView, setSelectedView] = useState('dashboard');
+function MainApp() {
+  const { user, logout, apiCall } = useAuth();
+  const [selectedView, setSelectedView] = useState('tasks');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +44,7 @@ function App() {
     const fetchTasks = async () => {
       try {
         setTasksLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_BACK_END_URL}/tasks`);
+        const response = await apiCall('/tasks');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -55,7 +60,7 @@ function App() {
 
     fetchStatus();
     fetchTasks();
-  }, []);
+  }, [apiCall]);
 
   const handleMenuToggle = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -68,11 +73,8 @@ function App() {
   // Task management functions
   const handleCreateTask = async (task) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACK_END_URL}/tasks`, {
+      const response = await apiCall('/tasks', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(task),
       });
 
@@ -101,11 +103,8 @@ function App() {
 
   const handleUpdateTask = async (updatedTask) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACK_END_URL}/tasks/${updatedTask.id}`, {
+      const response = await apiCall(`/tasks/${updatedTask.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(updatedTask),
       });
 
@@ -135,7 +134,7 @@ function App() {
 
   const handleDeleteTask = async (id) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACK_END_URL}/tasks/${id}`, {
+      const response = await apiCall(`/tasks/${id}`, {
         method: 'DELETE',
       });
 
@@ -166,40 +165,6 @@ function App() {
 
   const renderMainContent = () => {
     switch (selectedView) {
-      case 'dashboard':
-        return (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-600 mb-4">Dashboard</h2>
-              <p className="text-gray-500 mb-8">Welcome to Agile TaskIQ Dashboard</p>
-              
-              {/* Status information */}
-              <div className="bg-white rounded-lg shadow p-6 max-w-md mx-auto">
-                <h3 className="text-lg font-medium text-gray-800 mb-4">System Status</h3>
-                {loading && <div className="text-blue-600">Loading status...</div>}
-                {error && <div className="text-red-600">Status Error: {error}</div>}
-                {status && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">API Status:</span>
-                      <span className={status.status === 'healthy' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                        {status.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Message:</span>
-                      <span className="text-gray-800">{status.message}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Version:</span>
-                      <span className="text-gray-800">{status.version}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
       case 'tasks':
         return (
           <div className="flex flex-col lg:flex-row gap-6 h-full overflow-hidden">
@@ -241,10 +206,24 @@ function App() {
         );
       case 'settings':
         return (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-600 mb-4">Settings</h2>
-              <p className="text-gray-500">Application settings coming soon</p>
+          <div className="space-y-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Settings</h2>
+              <p className="text-gray-600">Manage your account settings and view system status</p>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <UserProfileSettings />
+              </div>
+              <div>
+                <SystemStatus 
+                  status={status}
+                  loading={loading}
+                  error={error}
+                  user={user}
+                />
+              </div>
             </div>
           </div>
         );
@@ -272,6 +251,8 @@ function App() {
         onSelectView={setSelectedView}
         isOpen={isSidebarOpen}
         onClose={handleSidebarClose}
+        user={user}
+        onLogout={logout}
       />
       
       {/* Main Content */}
@@ -283,6 +264,16 @@ function App() {
         </main>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <ProtectedRoute>
+        <MainApp />
+      </ProtectedRoute>
+    </AuthProvider>
   );
 }
 
