@@ -15,7 +15,18 @@ export function TaskCard({ task, isSelected, onSelect }: TaskCardProps) {
     return { label: 'Low', variant: 'secondary' };
   };
 
+  const calculateDaysUntilDeadline = (deadline: string): number => {
+    const deadlineDate = new Date(deadline);
+    const today = new Date();
+    
+    deadlineDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    return Math.floor((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
   const priority = getPriorityLevel(task.priority_score);
+  const daysUntil = calculateDaysUntilDeadline(task.deadline);
 
   return (
     <button
@@ -37,9 +48,19 @@ export function TaskCard({ task, isSelected, onSelect }: TaskCardProps) {
           <p className="text-slate-500 text-sm mb-3">{task.description}</p>
           
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-slate-500 text-xs">
-              Due: {new Date(task.deadline).toLocaleDateString()}
-            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-slate-500 text-xs">Due:</span>
+              <span className={`text-xs font-medium ${
+                daysUntil < 0 ? 'text-red-600' : 
+                daysUntil === 0 ? 'text-orange-600' : 
+                daysUntil <= 3 ? 'text-yellow-600' : 'text-slate-700'
+              }`}>
+                {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                {daysUntil === 0 ? ' (Today!)' : 
+                 daysUntil < 0 ? ` (${Math.abs(daysUntil)}d overdue)` :
+                 daysUntil <= 7 ? ` (${daysUntil}d)` : ''}
+              </span>
+            </div>
             <Badge variant={priority.variant} className="text-xs">
               {priority.label}
             </Badge>

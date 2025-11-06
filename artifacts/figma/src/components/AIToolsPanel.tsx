@@ -1,3 +1,4 @@
+import React from 'react';
 import { Sparkles, TrendingUp, Clock, AlertTriangle, CheckCircle2, Target, Zap } from 'lucide-react';
 import { Task } from '../App';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -9,9 +10,10 @@ import { Alert, AlertDescription } from './ui/alert';
 interface AIToolsPanelProps {
   selectedTask: Task | null;
   allTasks: Task[];
+  targetDate?: string;
 }
 
-export function AIToolsPanel({ selectedTask, allTasks }: AIToolsPanelProps) {
+export function AIToolsPanel({ selectedTask, allTasks, targetDate }: AIToolsPanelProps) {
   if (!selectedTask) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -43,7 +45,14 @@ export function AIToolsPanel({ selectedTask, allTasks }: AIToolsPanelProps) {
   }
 
   const calculateDaysUntilDeadline = (deadline: string): number => {
-    return Math.floor((new Date(deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    const deadlineDate = new Date(deadline);
+    const today = new Date();
+    
+    // Reset time to avoid timezone issues
+    deadlineDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    return Math.floor((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   };
 
   const getTshirtSizeRecommendation = (task: Task): {
@@ -169,6 +178,15 @@ export function AIToolsPanel({ selectedTask, allTasks }: AIToolsPanelProps) {
         <p className="text-blue-100">
           Intelligent insights powered by Agile TaskIQ AI
         </p>
+        <div className="mt-3 p-2 bg-blue-500/30 rounded-md">
+          <p className="text-xs text-blue-100 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {targetDate 
+              ? `Showing tasks within 7 days of ${new Date(targetDate).toLocaleDateString()}`
+              : 'Analysis based on tasks due within the next 7 days'
+            }
+          </p>
+        </div>
       </div>
 
       {/* Selected Task Overview */}
@@ -190,11 +208,22 @@ export function AIToolsPanel({ selectedTask, allTasks }: AIToolsPanelProps) {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="space-y-1">
               <p className="text-xs text-slate-500">Deadline</p>
-              <p className="text-slate-900">
-                {new Date(selectedTask.deadline).toLocaleDateString()}
+              <p className="text-slate-900 font-semibold">
+                {new Date(selectedTask.deadline + 'T00:00:00').toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short', 
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
               </p>
-              <p className="text-xs text-slate-600">
-                {daysUntil > 0 ? `${daysUntil} days away` : daysUntil === 0 ? 'Today!' : `${Math.abs(daysUntil)} days overdue`}
+              <p className={`text-xs font-medium ${
+                daysUntil < 0 ? 'text-red-600' : 
+                daysUntil === 0 ? 'text-orange-600' : 
+                daysUntil <= 3 ? 'text-yellow-600' : 'text-slate-600'
+              }`}>
+                {daysUntil > 0 ? `${daysUntil} days away` : 
+                 daysUntil === 0 ? 'Due Today!' : 
+                 `${Math.abs(daysUntil)} days overdue`}
               </p>
             </div>
             <div className="space-y-1">
@@ -366,11 +395,23 @@ export function AIToolsPanel({ selectedTask, allTasks }: AIToolsPanelProps) {
         </CardHeader>
         <CardContent className="text-sm text-slate-600 space-y-3">
           <div className="flex items-start gap-2">
+            <span className="text-blue-600">📅</span>
+            <div>
+              <p className="text-slate-700">Date Range Focus</p>
+              <p className="text-xs text-slate-500 mt-1">
+                {targetDate 
+                  ? `Showing tasks within 7 days (before/after) of ${new Date(targetDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}. This helps maintain focus on immediate priorities and upcoming deadlines.`
+                  : 'This analysis includes only tasks due within the next 7 days to help you focus on immediate priorities and upcoming deadlines.'
+                }
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
             <span className="text-blue-600">📊</span>
             <div>
               <p className="text-slate-700">Workload Analysis</p>
               <p className="text-xs text-slate-500 mt-1">
-                You have {allTasks.filter(t => t.status !== 'completed').length} active tasks. 
+                You have {allTasks.filter(t => t.status !== 'completed').length} active tasks in the current date range. 
                 This task ranks #{allTasks.filter(t => t.status !== 'completed').sort((a, b) => b.priority_score - a.priority_score).findIndex(t => t.id === selectedTask.id) + 1} in priority.
               </p>
             </div>

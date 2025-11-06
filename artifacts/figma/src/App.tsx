@@ -3,7 +3,7 @@ import { Sidebar } from './components/Sidebar';
 import { TaskList } from './components/TaskList';
 import { TaskDetailsPanel } from './components/TaskDetailsPanel';
 import { AIToolsPanel } from './components/AIToolsPanel';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 
 export interface Task {
@@ -19,44 +19,8 @@ export interface Task {
 
 export default function App() {
   const [selectedView, setSelectedView] = useState<'dashboard' | 'tasks' | 'ai-tools' | 'settings'>('tasks');
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: 1,
-      title: "Project Alpha Kickoff",
-      description: "Initial planning and team alignment",
-      deadline: "2024-03-15",
-      status: "in-progress",
-      estimated_duration: 4,
-      priority_score: 92
-    },
-    {
-      id: 2,
-      title: "Develop Feature X",
-      description: "Implement core functionality",
-      deadline: "2024-03-20",
-      status: "pending",
-      estimated_duration: 8,
-      priority_score: 78
-    },
-    {
-      id: 3,
-      title: "Research Market Trends",
-      description: "Analyze competitor strategies",
-      deadline: "2024-03-25",
-      status: "pending",
-      estimated_duration: 3,
-      priority_score: 65
-    },
-    {
-      id: 4,
-      title: "Submit project report",
-      description: "Send final report to manager",
-      deadline: "2025-11-06",
-      status: "pending",
-      estimated_duration: 4,
-      priority_score: 85
-    }
-  ]);
+  const [targetDate, setTargetDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handleCreateTask = (task: Omit<Task, 'id' | 'priority_score'>) => {
@@ -97,6 +61,22 @@ export default function App() {
     return Math.max(1, Math.min(100, score));
   };
 
+  const filterTasksByDateRange = (tasks: Task[], targetDate: string, dayRange: number = 7): Task[] => {
+    const target = new Date(targetDate);
+    target.setHours(0, 0, 0, 0);
+    
+    return tasks.filter(task => {
+      const taskDeadline = new Date(task.deadline);
+      taskDeadline.setHours(0, 0, 0, 0);
+      
+      const daysDifference = Math.floor((taskDeadline.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
+      return daysDifference >= -dayRange && daysDifference <= dayRange;
+    });
+  };
+
+  // Filter tasks within 7 days of the target date
+  const filteredTasks = filterTasksByDateRange(tasks, targetDate);
+
   return (
     <div className="flex h-screen bg-slate-100">
       <Toaster />
@@ -105,12 +85,30 @@ export default function App() {
       <div className="flex flex-1 gap-6 p-6 overflow-hidden">
         {selectedView === 'tasks' && (
           <>
-            <TaskList 
-              tasks={tasks} 
-              selectedTask={selectedTask}
-              onSelectTask={setSelectedTask}
-              onCreateTask={handleCreateTask}
-            />
+            <div className="flex flex-col gap-4">
+              {/* Date Range Selector */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm w-[400px]">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="target-date" className="text-sm text-slate-600 font-medium">Filter by Date Range:</label>
+                  <input
+                    id="target-date"
+                    type="date"
+                    value={targetDate}
+                    onChange={(e) => setTargetDate(e.target.value)}
+                    className="text-sm border border-slate-300 rounded px-2 py-1"
+                  />
+                  <span className="text-xs text-slate-500">±7 days</span>
+                </div>
+              </div>
+              <TaskList 
+                tasks={filteredTasks} 
+                selectedTask={selectedTask}
+                onSelectTask={setSelectedTask}
+                onCreateTask={handleCreateTask}
+                targetDate={targetDate}
+                totalTasks={tasks.length}
+              />
+            </div>
             <TaskDetailsPanel 
               task={selectedTask}
               onUpdateTask={handleUpdateTask}
@@ -121,18 +119,37 @@ export default function App() {
         
         {selectedView === 'ai-tools' && (
           <>
-            <div className="w-80 flex-shrink-0">
+            <div className="w-80 flex-shrink-0 flex flex-col gap-4">
+              {/* Date Range Selector for AI Tools */}
+              <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="target-date-ai" className="text-xs text-slate-600 font-medium">Date Range Filter:</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="target-date-ai"
+                      type="date"
+                      value={targetDate}
+                      onChange={(e) => setTargetDate(e.target.value)}
+                      className="text-sm border border-slate-300 rounded px-2 py-1 flex-1"
+                    />
+                    <span className="text-xs text-slate-500">±7d</span>
+                  </div>
+                </div>
+              </div>
               <TaskList 
-                tasks={tasks} 
+                tasks={filteredTasks} 
                 selectedTask={selectedTask}
                 onSelectTask={setSelectedTask}
                 onCreateTask={handleCreateTask}
+                targetDate={targetDate}
+                totalTasks={tasks.length}
                 compact
               />
             </div>
             <AIToolsPanel 
               selectedTask={selectedTask}
-              allTasks={tasks}
+              allTasks={filteredTasks}
+              targetDate={targetDate}
             />
           </>
         )}

@@ -12,10 +12,12 @@ interface TaskListProps {
   selectedTask: Task | null;
   onSelectTask: (task: Task) => void;
   onCreateTask: (task: Omit<Task, 'id' | 'priority_score'>) => void;
+  targetDate?: string;
+  totalTasks?: number;
   compact?: boolean;
 }
 
-export function TaskList({ tasks, selectedTask, onSelectTask, onCreateTask, compact = false }: TaskListProps) {
+export function TaskList({ tasks, selectedTask, onSelectTask, onCreateTask, targetDate, totalTasks, compact = false }: TaskListProps) {
   const [filterPriority, setFilterPriority] = useState<'all' | 'high' | 'medium' | 'low'>('all');
   const [showHighPriorityOnly, setShowHighPriorityOnly] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -35,9 +37,24 @@ export function TaskList({ tasks, selectedTask, onSelectTask, onCreateTask, comp
       <div className={`${compact ? 'p-4' : 'p-6'} border-b border-slate-200`}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-slate-900">{compact ? 'Select Task' : 'Task List'}</h2>
-          {compact && (
-            <Badge variant="secondary">{filteredTasks.length} tasks</Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {compact && (
+              <Badge variant="secondary">{filteredTasks.length} tasks</Badge>
+            )}
+            {!compact && totalTasks && (
+              <div className="text-xs text-slate-500">
+                Showing {filteredTasks.length} of {totalTasks} tasks
+                {targetDate && (
+                  <span className="block">±7 days from {new Date(targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                )}
+              </div>
+            )}
+            {targetDate && compact && (
+              <div className="text-xs text-slate-500">
+                ±7d from {new Date(targetDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </div>
+            )}
+          </div>
         </div>
         
         {!compact && (
@@ -84,7 +101,18 @@ export function TaskList({ tasks, selectedTask, onSelectTask, onCreateTask, comp
         ))}
         {filteredTasks.length === 0 && (
           <div className="text-center py-8 text-slate-400">
-            No tasks found
+            <div className="space-y-2">
+              <p>No tasks found</p>
+              {targetDate && (
+                <p className="text-xs">
+                  No tasks within 7 days of {new Date(targetDate).toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

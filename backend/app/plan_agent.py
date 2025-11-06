@@ -78,83 +78,7 @@ class DailyPlanGenerator:
         except (json.JSONDecodeError, KeyError):
             return "Error parsing dependency data."
     
-    @tool
-    @staticmethod
-    def calculate_time_blocks(tasks_data: str) -> str:
-        """
-        Calculate optimal time blocks for task scheduling.
-        
-        Args:
-            tasks_data: JSON string containing task information
-            
-        Returns:
-            Formatted time block allocation
-        """
-        try:
-            tasks_input = json.loads(tasks_data)
-            morning_tasks = []
-            afternoon_tasks = []
-            evening_tasks = []
-            
-            # Handle different input formats
-            if isinstance(tasks_input, dict):
-                # Convert dict format to list format
-                tasks = []
-                for task_name, task_info in tasks_input.items():
-                    task = {
-                        'title': task_name,
-                        'priority_score': 3,  # Default priority
-                        'estimated_duration': task_info.get('duration', 60)
-                    }
-                    # Map priority strings to scores
-                    if isinstance(task_info.get('priority'), str):
-                        priority_map = {'High': 5, 'Medium': 3, 'Low': 1}
-                        task['priority_score'] = priority_map.get(task_info.get('priority'), 3)
-                    tasks.append(task)
-            else:
-                # Assume it's already a list
-                tasks = tasks_input
-            
-            # Sort tasks by priority and estimated duration
-            sorted_tasks = sorted(tasks, key=lambda x: (
-                -x.get('priority_score', 0),  # Higher priority first
-                x.get('estimated_duration', 60)  # Shorter tasks first for same priority
-            ))
-            
-            morning_time = 0
-            afternoon_time = 0
-            evening_time = 0
-            
-            for task in sorted_tasks:
-                duration = task.get('estimated_duration', 60)
-                title = task.get('title', 'Untitled Task')
-                
-                # Allocate to time blocks (morning: 3hrs, afternoon: 4hrs, evening: 2hrs)
-                if morning_time + duration <= 180:  # 3 hours = 180 minutes
-                    morning_tasks.append(f"- {title} ({duration} min)")
-                    morning_time += duration
-                elif afternoon_time + duration <= 240:  # 4 hours = 240 minutes
-                    afternoon_tasks.append(f"- {title} ({duration} min)")
-                    afternoon_time += duration
-                elif evening_time + duration <= 120:  # 2 hours = 120 minutes
-                    evening_tasks.append(f"- {title} ({duration} min)")
-                    evening_time += duration
-                else:
-                    # If task doesn't fit, add to afternoon (can be moved to next day)
-                    afternoon_tasks.append(f"- {title} ({duration} min) *[Consider for next day]*")
-            
-            # Format as string
-            result = "## Time Block Allocation\n\n"
-            result += "### Morning Block (9:00 AM - 12:00 PM)\n"
-            result += ("\n".join(morning_tasks) if morning_tasks else "No tasks scheduled") + "\n\n"
-            result += "### Afternoon Block (1:00 PM - 5:00 PM)\n"
-            result += ("\n".join(afternoon_tasks) if afternoon_tasks else "No tasks scheduled") + "\n\n"
-            result += "### Evening Block (6:00 PM - 8:00 PM)\n"
-            result += ("\n".join(evening_tasks) if evening_tasks else "No tasks scheduled")
-            
-            return result
-        except (json.JSONDecodeError, KeyError, Exception) as e:
-            return f"Error calculating time blocks: {str(e)}"
+
     
     def _create_planning_agents(self) -> tuple:
         """Create the specialized CrewAI agents for daily planning."""
@@ -179,7 +103,6 @@ class DailyPlanGenerator:
             productivity patterns, energy levels throughout the day, and how to sequence 
             tasks for maximum efficiency.""",
             llm=self.llm,
-            tools=[DailyPlanGenerator.calculate_time_blocks],
             verbose=True
         )
         
@@ -237,7 +160,7 @@ class DailyPlanGenerator:
             - Afternoon block: 1:00 PM - 5:00 PM (4 hours)
             - Evening block: 6:00 PM - 8:00 PM (2 hours)
             
-            Use the calculate_time_blocks tool to optimize task allocation.
+            Create an optimized task allocation for these time blocks.
             """,
             agent=schedule_optimizer,
             expected_output="Optimized daily schedule with tasks allocated to appropriate time blocks"
@@ -280,7 +203,7 @@ class DailyPlanGenerator:
         target_date = target_date or datetime.now()
         
         # Get user tasks and dependencies from database
-        user_tasks, dependencies = self._fetch_user_tasks_and_dependencies(user_id)
+        user_tasks, dependencies = self._fetch_user_tasks_and_dependencies(user_id, target_date)
         
         if not user_tasks:
             return self._generate_empty_plan(target_date)
@@ -310,12 +233,13 @@ class DailyPlanGenerator:
         except Exception as e:
             return f"Error generating daily plan: {str(e)}"
     
-    def _fetch_user_tasks_and_dependencies(self, user_id: int) -> tuple:
+    def _fetch_user_tasks_and_dependencies(self, user_id: int, target_date: datetime = None) -> tuple:
         """
-        Fetch user tasks and dependencies from the database.
+        Fetch user tasks and dependencies from the database, filtering for tasks due within the next week.
         
         Args:
             user_id: ID of the user
+            target_date: Reference date for filtering (defaults to today)
             
         Returns:
             Tuple of (tasks_list, dependencies_list)
@@ -324,12 +248,25 @@ class DailyPlanGenerator:
         # In production, this should be properly injected
         from app.database import SessionLocal
         
+        if target_date is None:
+            target_date = datetime.now()
+        
+        # Calculate the date range: from target_date to 7 days later
+        end_date = target_date + timedelta(days=7)
+        
         db = SessionLocal()
         try:
-            # Fetch user tasks with related data
-            tasks = db.query(TaskModel).filter(TaskModel.user_id == user_id).all()
+            # Fetch user tasks with related data, filtering by deadline within the next week
+            # Include tasks with no deadline or deadline within the next week
+            tasks = db.query(TaskModel).filter(
+                TaskModel.user_id == user_id,
+                (TaskModel.deadline.is_(None) | 
+                 ((TaskModel.deadline >= target_date.date()) & 
+                  (TaskModel.deadline <= end_date.date())))
+            ).all()
             
             user_tasks = []
+            task_ids = []
             for task in tasks:
                 task_dict = {
                     'id': task.id,
@@ -342,21 +279,24 @@ class DailyPlanGenerator:
                     'tshirt_size': task.tshirt_score.tshirt_size if task.tshirt_score else 'M'
                 }
                 user_tasks.append(task_dict)
+                task_ids.append(task.id)
             
-            # Fetch dependencies
-            dependencies = db.query(TaskDependency).join(
-                TaskModel, TaskDependency.task_id == TaskModel.id
-            ).filter(TaskModel.user_id == user_id).all()
+            # Fetch dependencies only for the filtered tasks
+            dependencies = db.query(TaskDependency).filter(
+                TaskDependency.task_id.in_(task_ids)
+            ).all()
             
             dep_list = []
             for dep in dependencies:
-                dep_dict = {
-                    'task_id': dep.task_id,
-                    'task_title': dep.task.title,
-                    'depends_on_id': dep.depends_on_task_id,
-                    'depends_on_title': dep.depends_on_task.title
-                }
-                dep_list.append(dep_dict)
+                # Only include dependencies where both tasks are in our filtered set
+                if dep.depends_on_task_id in task_ids:
+                    dep_dict = {
+                        'task_id': dep.task_id,
+                        'task_title': dep.task.title,
+                        'depends_on_id': dep.depends_on_task_id,
+                        'depends_on_title': dep.depends_on_task.title
+                    }
+                    dep_list.append(dep_dict)
             
             return user_tasks, dep_list
         finally:

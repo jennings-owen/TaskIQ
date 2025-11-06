@@ -224,65 +224,6 @@ export function CreateTaskDialog({ open, onOpenChange, onCreateTask }: CreateTas
             </div>
           </div>
 
-          {/* AI Priority Score Preview */}
-          {calculatedPriority !== null && (
-            <div className="space-y-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-600" />
-                  <Label className="text-blue-900">AI-Generated Priority Score</Label>
-                </div>
-                <Badge variant="outline" className="bg-white text-xs">
-                  Auto-calculated
-                </Badge>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <div className="h-3 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all ${
-                        calculatedPriority >= 70
-                          ? 'bg-red-500'
-                          : calculatedPriority >= 40
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
-                      }`}
-                      style={{ width: `${calculatedPriority}%` }}
-                    />
-                  </div>
-                </div>
-                <Badge variant={getPriorityLevel(calculatedPriority).variant} className="min-w-[80px] justify-center">
-                  {calculatedPriority}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-slate-700">
-                  {getPriorityLevel(calculatedPriority).label}
-                </p>
-                <p className="text-xs text-slate-500 italic">
-                  This score will be saved
-                </p>
-              </div>
-              
-              {calculatedPriority >= 70 && (
-                <Alert className="bg-red-50 border-red-200">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-800 text-sm">
-                    This task will be high priority. Consider addressing it soon.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              <div className="pt-2 border-t border-blue-200">
-                <p className="text-xs text-blue-700">
-                  <strong>AI Formula:</strong> Score = 100 - (days_until_deadline × 5) - (estimated_duration × 3)
-                </p>
-              </div>
-            </div>
-          )}
-
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
