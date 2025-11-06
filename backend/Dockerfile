@@ -25,9 +25,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code from backend directory
-# Exclude __init__.py to prevent it from making /app a package and causing circular imports
 COPY backend/ .
-RUN rm -f __init__.py
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \
