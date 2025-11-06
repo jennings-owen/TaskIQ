@@ -44,12 +44,12 @@ from app.task_dependencies import router as task_deps_router
 from app.priority_scores import router as priority_scores_router
 from app.tshirt_scores import router as tshirt_scores_router
 
-app.include_router(tasks_router)
-app.include_router(ai_router)
-app.include_router(users_router)
-app.include_router(task_deps_router)
-app.include_router(priority_scores_router)
-app.include_router(tshirt_scores_router)
+app.include_router(tasks_router, prefix="/api")
+app.include_router(ai_router, prefix="/api")
+app.include_router(users_router, prefix="/api")
+app.include_router(task_deps_router, prefix="/api")
+app.include_router(priority_scores_router, prefix="/api")
+app.include_router(tshirt_scores_router, prefix="/api")
 
 # Ensure database tables are created (safe when using an existing DB)
 from app.database import engine, Base
