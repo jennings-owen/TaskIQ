@@ -2,9 +2,11 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import dotenv
+from pathlib import Path
 
-# Load environment variables from .env file
-dotenv.load_dotenv()
+# Load environment variables from .env file in root directory
+root_dir = Path(__file__).parent.parent.parent
+dotenv.load_dotenv(dotenv_path=root_dir / ".env")
 
 
 app = FastAPI()
@@ -43,6 +45,7 @@ from app.users import router as users_router
 from app.task_dependencies import router as task_deps_router
 from app.priority_scores import router as priority_scores_router
 from app.tshirt_scores import router as tshirt_scores_router
+from app.daily_plan import router as daily_plan_router
 
 app.include_router(tasks_router, prefix="/api")
 app.include_router(ai_router, prefix="/api")
@@ -50,6 +53,7 @@ app.include_router(users_router, prefix="/api")
 app.include_router(task_deps_router, prefix="/api")
 app.include_router(priority_scores_router, prefix="/api")
 app.include_router(tshirt_scores_router, prefix="/api")
+app.include_router(daily_plan_router, prefix="/api")
 
 # Ensure database tables are created (safe when using an existing DB)
 from app.database import engine, Base

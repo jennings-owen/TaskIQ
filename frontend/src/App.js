@@ -6,6 +6,7 @@ import { TaskList } from './components/TaskList';
 import { TaskDetailsPanel } from './components/TaskDetailsPanel';
 import UserProfileSettings from './components/UserProfileSettings';
 import SystemStatus from './components/SystemStatus';
+import DailyPlan from './components/DailyPlan';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -198,14 +199,7 @@ function MainApp() {
           </div>
         );
       case 'ai-tools':
-        return (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-600 mb-4">AI Tools</h2>
-              <p className="text-gray-500">AI-powered task management tools coming soon</p>
-            </div>
-          </div>
-        );
+        return <DailyPlan />;
       case 'settings':
         return (
           <div className="space-y-6">
