@@ -35,11 +35,16 @@ The SQLite DB used by the service (seeded for development) is at `backend/team_s
   - Request: `{"tasks": [{"title": ..., "task_id": optional, "deadline": ..., "estimated_duration": ...}]}`
   - Query param: `?persist=true` will write computed priority scores to `task_priority_scores` (requires `task_id` to be provided and valid).
 
-- `POST /ai/size` — general size helper (ephemeral)
-  - Returns recommended size based on height/weight/gender; persistence is not supported on this endpoint.
+- `POST /ai/size` — Agile t-shirt size estimation for tasks (ephemeral)
+  - Estimates task complexity/effort using t-shirt sizes (XS, S, M, L, XL)
+  - Request: `{"title": "string", "description": "optional", "estimated_duration": int, "has_dependencies": bool}`
+  - Returns: `{"recommended_size": "M", "rationale": "explanation"}`
+  - Ephemeral estimation only; use `/tasks/{task_id}/ai/size` to persist
 
-- `POST /tasks/{task_id}/ai/size` — compute and optionally persist t-shirt size
-  - Query param `?persist=true` will upsert a row into `task_tshirt_scores` for the given `task_id`.
+- `POST /tasks/{task_id}/ai/size` — compute and persist t-shirt size for existing task
+  - Analyzes task attributes (title, description, duration, dependencies) to estimate complexity
+  - Query param `?persist=true` (default) will upsert into `task_tshirt_scores`
+  - Returns size (XS/S/M/L/XL) based on Agile estimation factors
 
 ## Example requests
 
@@ -55,10 +60,16 @@ curl -X POST "http://127.0.0.1:8000/tasks" -H "Content-Type: application/json" -
 curl -X POST "http://127.0.0.1:8000/tasks" -H "Content-Type: application/json" -d '{"title":"Implement login","description":"OAuth 2.0","deadline":"2025-11-20T17:00:00Z","estimated_duration":8}'
 ```
 
-- Compute and persist a t-shirt size for task 1:
+- Estimate t-shirt size for a task (ephemeral):
 
 ```pwsh
-curl -X POST "http://127.0.0.1:8000/tasks/1/ai/size?persist=true" -H "Content-Type: application/json" -d '{"height_cm":170,"weight_kg":70,"gender":"male","fit_preference":"regular"}'
+curl -X POST "http://127.0.0.1:8000/api/ai/size" -H "Content-Type: application/json" -d '{"title":"Implement OAuth integration","description":"Add OAuth 2.0 providers","estimated_duration":12,"has_dependencies":true}'
+```
+
+- Compute and persist t-shirt size for existing task 1:
+
+```pwsh
+curl -X POST "http://127.0.0.1:8000/api/tasks/1/ai/size?persist=true"
 ```
 
 ## Response examples

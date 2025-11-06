@@ -187,41 +187,6 @@ class TaskSizeRequest(BaseModel):
         return v
 
 
-# Keep old AISizeRequest for backward compatibility (deprecated)
-class AISizeRequest(BaseModel):
-    """DEPRECATED: Use TaskSizeRequest instead. This is for physical t-shirt sizing."""
-    height_cm: int
-    weight_kg: int
-    gender: str
-    fit_preference: str
-
-    @validator("height_cm")
-    def validate_height(cls, v):
-        if v <= 0:
-            raise ValueError("Height must be positive")
-        return v
-
-    @validator("weight_kg")
-    def validate_weight(cls, v):
-        if v <= 0:
-            raise ValueError("Weight must be positive")
-        return v
-
-    @validator("gender")
-    def validate_gender(cls, v):
-        allowed_genders = ["male", "female", "unisex"]
-        if v.lower() not in allowed_genders:
-            raise ValueError(f"Gender must be one of: {', '.join(allowed_genders)}")
-        return v.lower()
-
-    @validator("fit_preference")
-    def validate_fit_preference(cls, v):
-        allowed_fits = ["slim", "regular", "loose"]
-        if v.lower() not in allowed_fits:
-            raise ValueError(f"Fit preference must be one of: {', '.join(allowed_fits)}")
-        return v.lower()
-
-
 class AISizeResponse(BaseModel):
     recommended_size: str
     rationale: Optional[str] = None
