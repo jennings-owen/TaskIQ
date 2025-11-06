@@ -212,7 +212,7 @@ export function CreateTaskDialog({ open, onOpenChange, onCreateTask }: CreateTas
             </div>
             <Slider
               value={[estimatedDuration]}
-              onValueChange={([value]) => setEstimatedDuration(value)}
+              onValueChange={([value]: number[]) => setEstimatedDuration(value)}
               min={1}
               max={24}
               step={1}

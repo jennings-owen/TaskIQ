@@ -48,14 +48,20 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 # Optional for dev - has default value
 # For production: python -c "import secrets; print(secrets.token_urlsafe(32))"
 # SECRET_KEY=your-secret-key-here-change-this
-
+# .env
+OPENAI_API_KEY=KEY_HERE
 BACKEND_PORT=8000
+BACK_END_URL=http://localhost:8000
 FRONT_END_URL=http://localhost:3000
+COMPOSE_PROJECT_NAME=synapsesquad
+SECRET_KEY=SECRET_KEY_HERE
+BACKEND_PORT=8000
 ```
 
 ### Frontend .env (place in `/frontend/` folder)
 ```env
 REACT_APP_BACK_END_URL=http://localhost:8000
+PORT=3000
 ```
 
 **Note:** React only exposes variables prefixed with `REACT_APP_` at build time.
