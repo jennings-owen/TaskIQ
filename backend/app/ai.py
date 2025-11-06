@@ -89,7 +89,14 @@ def _estimate_task_size(
     """
     Estimate task size based on complexity factors.
     
-    Returns: (size, rationale) tuple
+    Scoring factors (0-115 points total):
+    - Estimated duration (0-40 points): Based on hours to complete
+    - Title/description complexity (0-30 points): Keyword analysis
+    - Description length (0-15 points): Scope indicator
+    - Dependencies (0-15 points): Coordination overhead
+    - Deadline urgency (0-15 points): Time pressure factor
+    
+    Returns: (size, rationale) tuple where size is XS/S/M/L/XL
     """
     complexity_score = 0
     factors = []
@@ -154,20 +161,63 @@ def _estimate_task_size(
         complexity_score += 15
         factors.append("dependencies: yes (coordination needed)")
     
+    # Factor 5: Deadline urgency (0-15 points)
+    if deadline:
+        try:
+            now = datetime.utcnow()
+            # Handle both datetime objects and strings
+            if isinstance(deadline, str):
+                from dateutil import parser
+                deadline_dt = parser.parse(deadline)
+            else:
+                deadline_dt = deadline
+            
+            # Calculate days until deadline
+            delta = deadline_dt - now
+            days_until = delta.total_seconds() / 86400
+            
+            if days_until < 0:
+                # Overdue - maximum urgency
+                complexity_score += 15
+                factors.append(f"deadline: overdue by {abs(days_until):.1f} days (critical)")
+            elif days_until <= 1:
+                # Due within 1 day
+                complexity_score += 15
+                factors.append(f"deadline: {days_until:.1f} days (critical)")
+            elif days_until <= 3:
+                # Due within 3 days
+                complexity_score += 12
+                factors.append(f"deadline: {days_until:.1f} days (very urgent)")
+            elif days_until <= 7:
+                # Due within 1 week
+                complexity_score += 8
+                factors.append(f"deadline: {days_until:.1f} days (urgent)")
+            elif days_until <= 14:
+                # Due within 2 weeks
+                complexity_score += 4
+                factors.append(f"deadline: {days_until:.1f} days (moderate urgency)")
+            else:
+                # More than 2 weeks away
+                complexity_score += 0
+                factors.append(f"deadline: {days_until:.1f} days (comfortable)")
+        except Exception as e:
+            # If deadline parsing fails, don't add urgency but note it
+            factors.append("deadline: could not parse")
+    
     # Map complexity score to T-shirt size
-    # Total possible: 0-100 points
-    if complexity_score <= 20:
+    # Total possible: 0-115 points (updated to include deadline factor)
+    if complexity_score <= 23:  # ~20% of 115
         size = "XS"
-    elif complexity_score <= 40:
+    elif complexity_score <= 46:  # ~40% of 115
         size = "S"
-    elif complexity_score <= 60:
+    elif complexity_score <= 69:  # ~60% of 115
         size = "M"
-    elif complexity_score <= 80:
+    elif complexity_score <= 92:  # ~80% of 115
         size = "L"
     else:
         size = "XL"
     
-    rationale = f"Score: {complexity_score}/100. Factors: {'; '.join(factors)}"
+    rationale = f"Score: {complexity_score}/115. Factors: {'; '.join(factors)}"
     return size, rationale
 
 

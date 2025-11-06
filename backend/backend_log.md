@@ -388,6 +388,37 @@ All foreign key constraints, cascade deletes, and indexes are properly configure
 
 ---
 
+## Additional Fix: November 6, 2025 (Post-Review)
+
+### 6. ✅ **Deadline Parameter Not Used in T-Shirt Sizing (BUG)**
+
+**Issue**: The `_estimate_task_size()` function accepted a `deadline` parameter and the docstring claimed "Deadline urgency" was a factor, but the deadline was never actually used in the calculation. This was unused dead code that made the function signature misleading.
+
+**Fix Applied**:
+- Added Factor 5: Deadline urgency (0-15 points) to the complexity scoring algorithm
+- Deadline urgency scoring:
+  - **Overdue or ≤1 day**: +15 points (critical)
+  - **≤3 days**: +12 points (very urgent)
+  - **≤7 days**: +8 points (urgent)
+  - **≤14 days**: +4 points (moderate urgency)
+  - **>14 days**: +0 points (comfortable)
+- Updated total possible score from 100 to 115 points
+- Adjusted T-shirt size thresholds proportionally:
+  - XS: ≤23 points (~20%)
+  - S: 24-46 points (~40%)
+  - M: 47-69 points (~60%)
+  - L: 70-92 points (~80%)
+  - XL: >92 points
+- Updated docstring to document all 5 factors with their point ranges
+- Added error handling for deadline parsing failures
+
+**Files Modified**:
+- `backend/app/ai.py`: Added deadline urgency calculation, updated thresholds and documentation
+
+**Impact**: Task size estimation now properly considers deadline urgency, making the AI estimation more accurate for time-sensitive tasks. Overdue or urgent tasks will receive higher complexity scores, which better reflects the real-world pressure and coordination required.
+
+---
+
 ## Next Steps
 
 1. Run full test suite to verify all changes

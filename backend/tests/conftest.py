@@ -89,7 +89,7 @@ def default_user(db_session: Session) -> models.User:
         email="default@example.com",
         password_hash="hashed",
         is_active=True,
-        created_at=_now_iso(),
+        created_at=datetime.utcnow(),
     )
     db_session.add(user)
     db_session.commit()
@@ -216,11 +216,13 @@ def ai_rank_data() -> Dict:
 
 @pytest.fixture
 def ai_size_data() -> Dict:
+    """Fixture for Agile task sizing estimation (not physical t-shirt sizing)."""
     return {
-        "height_cm": 175,
-        "weight_kg": 70,
-        "gender": "male",
-        "fit_preference": "regular",
+        "title": "Implement user authentication",
+        "description": "Add JWT-based authentication with login and registration endpoints",
+        "estimated_duration": 8,
+        "deadline": (datetime.utcnow() + timedelta(days=5)).isoformat(),
+        "has_dependencies": False
     }
 
 

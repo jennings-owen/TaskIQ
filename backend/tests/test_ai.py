@@ -323,10 +323,10 @@ class TestAIRankEndpoint:
 
 
 class TestAISizeEndpoint:
-    """Test suite for /ai/size endpoint (T-shirt size recommendation)."""
+    """Test suite for /ai/size endpoint (Agile T-shirt size estimation for tasks)."""
     
     def test_size_recommendation_success(self, client, ai_size_data):
-        """Test POST /ai/size returns T-shirt size recommendation."""
+        """Test POST /ai/size returns Agile T-shirt size recommendation."""
         start_time = time.time()
         response = client.post("/api/ai/size", json=ai_size_data)
         end_time = time.time()
@@ -338,155 +338,139 @@ class TestAISizeEndpoint:
         data = response.json()
         assert "recommended_size" in data
         assert data["recommended_size"] in ["XS", "S", "M", "L", "XL"]
+        assert "rationale" in data
+        assert len(data["rationale"]) > 0
     
-    def test_size_male_regular_fit(self, client):
-        """Test size recommendation for male with regular fit."""
+    def test_size_simple_task(self, client):
+        """Test size recommendation for simple, quick task."""
         data = {
-            "height_cm": 175,
-            "weight_kg": 70,
-            "gender": "male",
-            "fit_preference": "regular"
+            "title": "Fix typo in README",
+            "description": "Update documentation typo",
+            "estimated_duration": 1,
+            "has_dependencies": False
         }
         response = client.post("/api/ai/size", json=data)
         assert response.status_code == 200
         result = response.json()
-        assert result["recommended_size"] in ["XS", "S", "M", "L", "XL"]
+        # Simple task should be XS or S
+        assert result["recommended_size"] in ["XS", "S"]
     
-    def test_size_female_slim_fit(self, client):
-        """Test size recommendation for female with slim fit."""
+    def test_size_complex_task(self, client):
+        """Test size recommendation for complex task."""
         data = {
-            "height_cm": 165,
-            "weight_kg": 55,
-            "gender": "female",
-            "fit_preference": "slim"
+            "title": "Refactor authentication architecture",
+            "description": "Migrate from session-based to JWT authentication, integrate OAuth providers, optimize security middleware, and update all API endpoints. Requires database schema changes and comprehensive testing.",
+            "estimated_duration": 40,
+            "has_dependencies": True
         }
         response = client.post("/api/ai/size", json=data)
         assert response.status_code == 200
         result = response.json()
-        assert result["recommended_size"] in ["XS", "S", "M", "L", "XL"]
+        # Complex task should be L or XL
+        assert result["recommended_size"] in ["L", "XL"]
     
-    def test_size_loose_fit(self, client):
-        """Test size recommendation with loose fit preference."""
+    def test_size_moderate_task(self, client):
+        """Test size recommendation for moderate complexity task."""
         data = {
-            "height_cm": 180,
-            "weight_kg": 80,
-            "gender": "male",
-            "fit_preference": "loose"
+            "title": "Add new user profile endpoint",
+            "description": "Create REST endpoint for user profile updates",
+            "estimated_duration": 6,
+            "has_dependencies": False
         }
         response = client.post("/api/ai/size", json=data)
         assert response.status_code == 200
         result = response.json()
-        assert result["recommended_size"] in ["XS", "S", "M", "L", "XL"]
+        # Moderate task should be S or M
+        assert result["recommended_size"] in ["S", "M"]
     
     def test_size_missing_required_field(self, client):
-        """Test /ai/size with missing required field."""
+        """Test /ai/size with missing required field (title)."""
         incomplete_data = {
-            "height_cm": 175,
-            "weight_kg": 70
-            # Missing gender and fit_preference
+            "description": "Some description",
+            "estimated_duration": 5
         }
         response = client.post("/api/ai/size", json=incomplete_data)
         assert response.status_code == 422
     
-    def test_size_negative_height(self, client):
-        """Test /ai/size with negative height."""
+    def test_size_empty_title(self, client):
+        """Test /ai/size with empty title."""
         data = {
-            "height_cm": -175,
-            "weight_kg": 70,
-            "gender": "male",
-            "fit_preference": "regular"
+            "title": "",
+            "estimated_duration": 5
         }
         response = client.post("/api/ai/size", json=data)
         assert response.status_code == 422
     
-    def test_size_negative_weight(self, client):
-        """Test /ai/size with negative weight."""
+    def test_size_negative_duration(self, client):
+        """Test /ai/size with negative estimated duration."""
         data = {
-            "height_cm": 175,
-            "weight_kg": -70,
-            "gender": "male",
-            "fit_preference": "regular"
+            "title": "Test task",
+            "estimated_duration": -5
         }
         response = client.post("/api/ai/size", json=data)
         assert response.status_code == 422
     
-    def test_size_zero_height(self, client):
-        """Test /ai/size with zero height."""
+    def test_size_minimal_task(self, client):
+        """Test /ai/size with only title (minimal valid input)."""
         data = {
-            "height_cm": 0,
-            "weight_kg": 70,
-            "gender": "male",
-            "fit_preference": "regular"
+            "title": "Minimal task"
         }
         response = client.post("/api/ai/size", json=data)
-        assert response.status_code == 422
-    
-    def test_size_extreme_height_short(self, client):
-        """Test /ai/size with extremely short height."""
-        data = {
-            "height_cm": 100,
-            "weight_kg": 40,
-            "gender": "male",
-            "fit_preference": "regular"
-        }
-        response = client.post("/api/ai/size", json=data)
-        assert response.status_code in [200, 422]
-        if response.status_code == 200:
-            result = response.json()
-            # Should recommend XS for very short person
-            assert result["recommended_size"] in ["XS", "S"]
-    
-    def test_size_extreme_height_tall(self, client):
-        """Test /ai/size with extremely tall height."""
-        data = {
-            "height_cm": 220,
-            "weight_kg": 120,
-            "gender": "male",
-            "fit_preference": "regular"
-        }
-        response = client.post("/api/ai/size", json=data)
-        assert response.status_code in [200, 422]
-        if response.status_code == 200:
-            result = response.json()
-            # Should recommend L or XL for very tall person
-            assert result["recommended_size"] in ["L", "XL"]
-    
-    def test_size_invalid_gender(self, client):
-        """Test /ai/size with invalid gender value."""
-        data = {
-            "height_cm": 175,
-            "weight_kg": 70,
-            "gender": "invalid",
-            "fit_preference": "regular"
-        }
-        response = client.post("/api/ai/size", json=data)
-        assert response.status_code == 422
-    
-    def test_size_invalid_fit_preference(self, client):
-        """Test /ai/size with invalid fit preference."""
-        data = {
-            "height_cm": 175,
-            "weight_kg": 70,
-            "gender": "male",
-            "fit_preference": "invalid"
-        }
-        response = client.post("/api/ai/size", json=data)
-        # Should reject invalid fit preference
-        assert response.status_code == 422
-    
-    def test_size_case_insensitive_gender(self, client):
-        """Test /ai/size accepts case-insensitive gender."""
-        data = {
-            "height_cm": 175,
-            "weight_kg": 70,
-            "gender": "MALE",
-            "fit_preference": "regular"
-        }
-        response = client.post("/api/ai/size", json=data)
-        # Should normalize case and accept
         assert response.status_code == 200
-        if response.status_code == 200:
-            assert response.json()["recommended_size"] in ["XS", "S", "M", "L", "XL"]
+        result = response.json()
+        assert result["recommended_size"] in ["XS", "S", "M", "L", "XL"]
+    
+    def test_size_with_long_duration(self, client):
+        """Test task with very long estimated duration."""
+        data = {
+            "title": "Large migration project",
+            "description": "Complete system migration",
+            "estimated_duration": 160,  # 4 weeks
+            "has_dependencies": True
+        }
+        response = client.post("/api/ai/size", json=data)
+        assert response.status_code == 200
+        result = response.json()
+        # Very long task should be XL
+        assert result["recommended_size"] == "XL"
+    
+    def test_size_keywords_increase_complexity(self, client):
+        """Test that complexity keywords affect sizing."""
+        # Task with complex keywords
+        complex_task = {
+            "title": "Database migration and API refactor",
+            "description": "Redesign database schema, optimize performance, integrate new security features",
+            "estimated_duration": 20
+        }
+        response = client.post("/api/ai/size", json=complex_task)
+        assert response.status_code == 200
+        complex_result = response.json()
+        
+        # Similar duration but simple keywords
+        simple_task = {
+            "title": "Update button text",
+            "description": "Change button label from 'Submit' to 'Send'",
+            "estimated_duration": 20
+        }
+        response2 = client.post("/api/ai/size", json=simple_task)
+        assert response2.status_code == 200
+        simple_result = response2.json()
+        
+        # Complex task should have larger or equal size
+        sizes = ["XS", "S", "M", "L", "XL"]
+        assert sizes.index(complex_result["recommended_size"]) >= sizes.index(simple_result["recommended_size"])
+    
+    def test_size_with_dependencies(self, client):
+        """Test that dependencies increase task size."""
+        data = {
+            "title": "Add feature X",
+            "estimated_duration": 5,
+            "has_dependencies": True
+        }
+        response = client.post("/api/ai/size", json=data)
+        assert response.status_code == 200
+        result = response.json()
+        assert "dependencies" in result["rationale"]
     
     def test_size_consistency(self, client, ai_size_data):
         """Test /ai/size returns consistent results for same input."""
@@ -499,34 +483,32 @@ class TestAISizeEndpoint:
         # Should return same size for same input
         assert response1.json()["recommended_size"] == response2.json()["recommended_size"]
     
-    def test_size_bmi_correlation(self, client):
-        """Test size recommendations correlate with BMI."""
-        # Low BMI person
-        low_bmi_data = {
-            "height_cm": 180,
-            "weight_kg": 60,
-            "gender": "male",
-            "fit_preference": "regular"
+    def test_size_duration_correlation(self, client):
+        """Test task size correlates with estimated duration."""
+        # Short duration task
+        short_task = {
+            "title": "Quick fix",
+            "estimated_duration": 2
         }
         
-        # High BMI person
-        high_bmi_data = {
-            "height_cm": 180,
-            "weight_kg": 100,
-            "gender": "male",
-            "fit_preference": "regular"
+        # Long duration task
+        long_task = {
+            "title": "Major refactor",
+            "estimated_duration": 80
         }
         
-        response_low = client.post("/api/ai/size", json=low_bmi_data)
-        response_high = client.post("/api/ai/size", json=high_bmi_data)
+        response_short = client.post("/api/ai/size", json=short_task)
+        response_long = client.post("/api/ai/size", json=long_task)
         
-        if response_low.status_code == 200 and response_high.status_code == 200:
-            size_low = response_low.json()["recommended_size"]
-            size_high = response_high.json()["recommended_size"]
-            
-            # High BMI should get larger size
-            sizes = ["XS", "S", "M", "L", "XL"]
-            assert sizes.index(size_high) >= sizes.index(size_low)
+        assert response_short.status_code == 200
+        assert response_long.status_code == 200
+        
+        size_short = response_short.json()["recommended_size"]
+        size_long = response_long.json()["recommended_size"]
+        
+        # Long duration should get larger size
+        sizes = ["XS", "S", "M", "L", "XL"]
+        assert sizes.index(size_long) >= sizes.index(size_short)
     
     def test_size_malformed_request(self, client):
         """Test /ai/size with malformed request body."""
