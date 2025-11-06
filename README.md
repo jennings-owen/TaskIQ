@@ -24,6 +24,18 @@ This project showcases **Generative AI integration at every phase of the SDLC**,
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+**Required Software:**
+- Docker Desktop 20.10+ ([Download](https://www.docker.com/products/docker-desktop))
+- Docker Compose 2.0+ (included with Docker Desktop)
+
+**Verify Installation:**
+```bash
+docker --version
+docker compose version
+```
+
 ### Three Operating Modes
 
 **1. Production Mode (Default)**
@@ -31,21 +43,27 @@ This project showcases **Generative AI integration at every phase of the SDLC**,
 .\docker-start.ps1          # Windows
 ./docker-start.sh           # Linux/Mac
 ```
-Optimized production build, runs in detached mode.
+- Multi-stage optimized build with nginx
+- Runs in detached mode (background)
+- Production-ready configuration
 
 **2. Development Mode**
 ```powershell
 .\docker-start.ps1 -Dev     # Windows
 ./docker-start.sh -Dev      # Linux/Mac
 ```
-Hot-reload enabled, code changes reflected immediately.
+- Hot-reload enabled for both frontend and backend
+- Code changes reflected immediately
+- Volumes mounted for live editing
 
 **3. Test Mode**
 ```powershell
 .\docker-start.ps1 -Test    # Windows
 ./docker-start.sh -Test     # Linux/Mac
 ```
-Runs full test suite (192+ tests) with coverage reporting.
+- Runs full test suite (192+ tests)
+- Generates coverage reports
+- Auto-cleanup after completion
 
 ### Access Points
 - **Frontend**: http://localhost:3000
@@ -58,6 +76,19 @@ Use these pre-seeded accounts:
 - Email: `bob.smith@agiletaskiq.com` | Password: `password123`
 
 Or register a new account via the UI.
+
+### Docker Architecture
+
+**Multi-Stage Production Build:**
+- **Frontend**: node:22-alpine (builder) → nginx:alpine (runtime)
+- **Backend**: python:3.11-slim with uvicorn
+- **Network**: Bridge network for inter-container communication
+- **Security**: Non-root users, health checks, minimal attack surface
+
+**Corporate Environment Support:**
+- SSL certificate validation disabled for proxy/firewall compatibility
+- Configurable via environment variables
+- See [docs/DOCKER_README.md](docs/DOCKER_README.md) for CA certificate setup
 
 ### Environment Setup
 **No configuration required for development!** The app works out of the box with sensible defaults.
@@ -76,7 +107,8 @@ See [ENV_FORMAT.md](docs/ENV_FORMAT.md) for complete environment variable docume
 ### Documentation
 
 **Getting Started:**
-- **Docker Guide**: [DOCKER_START_GUIDE.md](DOCKER_START_GUIDE.md) - Complete Docker usage guide
+- **Docker Quick Start**: [DOCKER_START_GUIDE.md](DOCKER_START_GUIDE.md) - Three operating modes explained
+- **Docker Setup Guide**: [docs/DOCKER_README.md](docs/DOCKER_README.md) - Complete Docker reference with troubleshooting
 - **Manual Setup**: [docs/SETUP.md](docs/SETUP.md) - Non-Docker installation
 
 **Technical Documentation:**
@@ -387,6 +419,7 @@ See [GitHub Actions README](.github/workflows/README.md) for detailed workflow d
 │   │   ├── test_ai.py           # AI tests
 │   │   ├── test_crud.py         # CRUD tests
 │   │   └── test_integration.py  # Integration tests
+│   ├── Dockerfile               # Backend container config
 │   ├── schema.sql               # Database DDL
 │   ├── seed_data.sql            # Demo data
 │   └── team_synapse.db          # SQLite database
@@ -397,6 +430,8 @@ See [GitHub Actions README](.github/workflows/README.md) for detailed workflow d
 │   │   ├── components/          # React components (15+)
 │   │   ├── contexts/            # AuthContext
 │   │   └── __tests__/           # Frontend tests
+│   ├── Dockerfile               # Frontend container config (multi-stage)
+│   ├── nginx.conf               # Nginx configuration for production
 │   └── package.json
 │
 ├── docs/                          # Comprehensive documentation
@@ -404,6 +439,7 @@ See [GitHub Actions README](.github/workflows/README.md) for detailed workflow d
 │   ├── ARCHITECTURE.md          # System design with UML
 │   ├── ADR.md                   # Architecture decisions
 │   ├── SECURITY_REVIEW.md       # Security audit (11 findings)
+│   ├── DOCKER_README.md         # Complete Docker reference
 │   ├── AGILE_PLAN.md            # Sprint plan
 │   ├── ENV_FORMAT.md            # Environment variables
 │   ├── SETUP.md                 # Manual setup guide
@@ -416,10 +452,14 @@ See [GitHub Actions README](.github/workflows/README.md) for detailed workflow d
 │   │       └── demo_notebook.ipynb  # Jupyter demo
 │   └── figma/                   # Figma-to-React components
 │
-├── DOCKER_START_GUIDE.md         # Docker usage guide
-├── docker-compose.yml            # Production config
-├── docker-compose.dev.yml        # Development config
+├── .github/workflows/            # CI/CD automation
+│   ├── ci.yml                   # Main CI/CD pipeline
+│   └── security.yml             # Security scanning
+│
+├── DOCKER_START_GUIDE.md         # Docker quick start (3 modes)
+├── docker-compose.yml            # Production/dev config
 ├── docker-compose.test.yml       # Test config
+├── requirements.txt              # Python dependencies
 └── README.md                     # This file
 ```
 
@@ -592,8 +632,22 @@ npm install
 # Rebuild containers
 docker-compose down
 docker-compose build --no-cache
-docker-compose up
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Check container status
+docker-compose ps
 ```
+
+**Common Docker Issues:**
+- **SSL Certificate Errors**: Fixed in frontend Dockerfile with `npm config set strict-ssl false`
+- **Port Conflicts**: Change ports in `.env` file and rebuild
+- **Build Failures**: Run `docker system prune -f` then rebuild
+- **Connection Issues**: Verify `REACT_APP_BACK_END_URL` is set correctly
+
+See [docs/DOCKER_README.md](docs/DOCKER_README.md) for comprehensive troubleshooting.
 
 ### Tests failing
 
