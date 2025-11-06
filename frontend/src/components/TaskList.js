@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { TaskCard } from './TaskCard';
 import { CreateTaskDialog } from './CreateTaskDialog';
 import { Button } from './ui/button';
