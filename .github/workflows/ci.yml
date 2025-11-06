@@ -32,25 +32,25 @@ jobs:
     
     - name: Validate docker-compose.test.yml
       run: |
-        docker-compose -f docker-compose.test.yml config
+        docker compose -f docker-compose.test.yml config
     
     - name: Build test images
       run: |
         echo "Building test environment..."
-        docker-compose -f docker-compose.test.yml build
+        docker compose -f docker-compose.test.yml build
     
     - name: Run full test suite via Docker
       run: |
         echo "Starting test suite execution..."
-        docker-compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from backend-test
+        docker compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from backend-test
       continue-on-error: true
     
     - name: Extract test results
       if: always()
       run: |
         echo "Extracting test results and coverage..."
-        docker-compose -f docker-compose.test.yml logs backend-test > backend-test-logs.txt
-        docker-compose -f docker-compose.test.yml logs frontend-test > frontend-test-logs.txt
+        docker compose -f docker-compose.test.yml logs backend-test > backend-test-logs.txt
+        docker compose -f docker-compose.test.yml logs frontend-test > frontend-test-logs.txt
     
     - name: Upload test logs
       if: always()
@@ -91,7 +91,7 @@ jobs:
     - name: Cleanup
       if: always()
       run: |
-        docker-compose -f docker-compose.test.yml down -v
+        docker compose -f docker-compose.test.yml down -v
     
     - name: Test suite summary
       if: always()
