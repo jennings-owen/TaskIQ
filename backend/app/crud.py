@@ -22,22 +22,15 @@ def create_task(db: Session, task: schemas.TaskCreate) -> models.Task:
     tshirt_size = data.pop("tshirt_size", None)
     priority_score = data.pop("priority_score", None)
     
-    # If no user_id provided, ensure a default system user exists and use it.
+    # user_id is now required - tasks must belong to an authenticated user
     if not data.get("user_id"):
-        system = db.query(models.User).filter(models.User.email == "system@local").first()
-        if not system:
-            system = models.User(name="system", email="system@local", password_hash="")
-            db.add(system)
-            db.commit()
-            db.refresh(system)
-        data["user_id"] = system.id
-    else:
-        # If a user_id was supplied, validate it exists to avoid DB integrity errors.
-        supplied = data.get("user_id")
-        user = db.query(models.User).filter(models.User.id == supplied).first()
-        if not user:
-            # Raise a ValueError so the HTTP layer can return a 400 with a helpful message
-            raise ValueError(f"user_id {supplied} does not exist")
+        raise ValueError("user_id is required. Tasks must be created by an authenticated user.")
+    
+    # Validate that the user_id exists to avoid DB integrity errors
+    supplied = data.get("user_id")
+    user = db.query(models.User).filter(models.User.id == supplied).first()
+    if not user:
+        raise ValueError(f"user_id {supplied} does not exist")
 
     # Create the main task
     db_task = models.Task(**data)
@@ -71,6 +64,8 @@ def create_task(db: Session, task: schemas.TaskCreate) -> models.Task:
 
 
 def update_task(db: Session, task_id: int, task: schemas.TaskUpdate) -> Optional[models.Task]:
+    from datetime import datetime
+    
     db_task = get_task(db, task_id)
     if not db_task:
         return None
@@ -83,6 +78,9 @@ def update_task(db: Session, task_id: int, task: schemas.TaskUpdate) -> Optional
     # Update main task fields
     for key, value in task_data.items():
         setattr(db_task, key, value)
+    
+    # Explicitly update the updated_at timestamp
+    db_task.updated_at = datetime.utcnow()
     
     # Update priority score if provided
     if priority_score is not None:

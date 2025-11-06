@@ -31,13 +31,13 @@ class TestTaskLifecycle:
             "status": "pending"
         }
         
-        create_response = client.post("/tasks", json=task_data)
+        create_response = client.post("/api/tasks", json=task_data)
         assert create_response.status_code in [200, 201]
         task = create_response.json()
         task_id = task["id"]
         
         # Step 2: Verify task was created
-        get_response = client.get(f"/tasks/{task_id}")
+        get_response = client.get(f"/api/tasks/{task_id}")
         assert get_response.status_code == 200
         assert get_response.json()["status"] == "pending"
         
@@ -46,22 +46,22 @@ class TestTaskLifecycle:
             "status": "in_progress",
             "title": "Complete Lifecycle Task - Updated"
         }
-        update_response = client.put(f"/tasks/{task_id}", json=update_data)
+        update_response = client.put(f"/api/tasks/{task_id}", json=update_data)
         assert update_response.status_code == 200
         assert update_response.json()["status"] == "in_progress"
         
         # Step 4: Complete the task
         complete_data = {"status": "completed"}
-        complete_response = client.put(f"/tasks/{task_id}", json=complete_data)
+        complete_response = client.put(f"/api/tasks/{task_id}", json=complete_data)
         assert complete_response.status_code == 200
         assert complete_response.json()["status"] == "completed"
         
         # Step 5: Delete the task
-        delete_response = client.delete(f"/tasks/{task_id}")
+        delete_response = client.delete(f"/api/tasks/{task_id}")
         assert delete_response.status_code in [200, 204]
         
         # Step 6: Verify task is deleted
-        verify_response = client.get(f"/tasks/{task_id}")
+        verify_response = client.get(f"/api/tasks/{task_id}")
         assert verify_response.status_code == 404
     
     def test_task_with_priority_score_lifecycle(self, client, sample_user):
@@ -76,7 +76,7 @@ class TestTaskLifecycle:
             "status": "pending"
         }
         
-        create_response = client.post("/tasks", json=task_data)
+        create_response = client.post("/api/tasks", json=task_data)
         assert create_response.status_code in [200, 201]
         task = create_response.json()
         
@@ -85,7 +85,7 @@ class TestTaskLifecycle:
             assert 1 <= task["priority_score"] <= 100
         
         # Get priority score via dedicated endpoint if available
-        score_response = client.get(f"/tasks/{task['id']}/priority")
+        score_response = client.get(f"/api/tasks/{task['id']}/priority")
         if score_response.status_code == 200:
             score_data = score_response.json()
             assert "score" in score_data
@@ -103,12 +103,12 @@ class TestTaskLifecycle:
             "status": "pending"
         }
         
-        create_response = client.post("/tasks", json=task_data)
+        create_response = client.post("/api/tasks", json=task_data)
         assert create_response.status_code in [200, 201]
         task = create_response.json()
         
         # Request t-shirt size estimation
-        size_response = client.post(f"/tasks/{task['id']}/estimate-size")
+        size_response = client.post(f"/api/tasks/{task['id']}/estimate-size")
         if size_response.status_code == 200:
             size_data = size_response.json()
             assert "tshirt_size" in size_data
@@ -128,7 +128,7 @@ class TestTaskDependencies:
             "depends_on_task_id": sample_tasks[1]['id']
         }
         
-        response = client.post("/tasks/dependencies", json=dependency_data)
+        response = client.post("/api/tasks/dependencies", json=dependency_data)
         assert response.status_code in [200, 201]
     
     def test_get_task_dependencies(self, client, sample_tasks):
@@ -141,10 +141,10 @@ class TestTaskDependencies:
             "task_id": sample_tasks[0]['id'],
             "depends_on_task_id": sample_tasks[1]['id']
         }
-        client.post("/tasks/dependencies", json=dependency_data)
+        client.post("/api/tasks/dependencies", json=dependency_data)
         
         # Get dependencies for task
-        response = client.get(f"/tasks/{sample_tasks[0]['id']}/dependencies")
+        response = client.get(f"/api/tasks/{sample_tasks[0]['id']}/dependencies")
         if response.status_code == 200:
             dependencies = response.json()
             assert isinstance(dependencies, list)
@@ -159,7 +159,7 @@ class TestTaskDependencies:
             "task_id": sample_tasks[0]['id'],
             "depends_on_task_id": sample_tasks[1]['id']
         }
-        response1 = client.post("/tasks/dependencies", json=dep1)
+        response1 = client.post("/api/tasks/dependencies", json=dep1)
         assert response1.status_code in [200, 201]
         
         # Try to create circular dependency: task[1] depends on task[0]
@@ -167,7 +167,7 @@ class TestTaskDependencies:
             "task_id": sample_tasks[1]['id'],
             "depends_on_task_id": sample_tasks[0]['id']
         }
-        response2 = client.post("/tasks/dependencies", json=dep2)
+        response2 = client.post("/api/tasks/dependencies", json=dep2)
         # Should either reject or handle gracefully
         assert response2.status_code in [200, 201, 400, 422]
     
@@ -181,14 +181,14 @@ class TestTaskDependencies:
             "task_id": sample_tasks[0]['id'],
             "depends_on_task_id": sample_tasks[1]['id']
         }
-        client.post("/tasks/dependencies", json=dependency_data)
+        client.post("/api/tasks/dependencies", json=dependency_data)
         
         # Delete the dependent task
-        delete_response = client.delete(f"/tasks/{sample_tasks[0]['id']}")
+        delete_response = client.delete(f"/api/tasks/{sample_tasks[0]['id']}")
         assert delete_response.status_code in [200, 204]
         
         # Verify task is deleted
-        verify_response = client.get(f"/tasks/{sample_tasks[0]['id']}")
+        verify_response = client.get(f"/api/tasks/{sample_tasks[0]['id']}")
         assert verify_response.status_code == 404
     
     def test_blocked_task_workflow(self, client, sample_tasks):
@@ -201,11 +201,11 @@ class TestTaskDependencies:
             "task_id": sample_tasks[0]['id'],
             "depends_on_task_id": sample_tasks[1]['id']
         }
-        client.post("/tasks/dependencies", json=dependency_data)
+        client.post("/api/tasks/dependencies", json=dependency_data)
         
         # Mark dependent task as blocked
         update_data = {"status": "blocked"}
-        response = client.put(f"/tasks/{sample_tasks[0]['id']}", json=update_data)
+        response = client.put(f"/api/tasks/{sample_tasks[0]['id']}", json=update_data)
         assert response.status_code == 200
         assert response.json()["status"] == "blocked"
 
@@ -244,14 +244,14 @@ class TestUserWorkflows:
             "status": "pending"
         }
         
-        response1 = client.post("/tasks", json=task1_data)
-        response2 = client.post("/tasks", json=task2_data)
+        response1 = client.post("/api/tasks", json=task1_data)
+        response2 = client.post("/api/tasks", json=task2_data)
         
         assert response1.status_code in [200, 201]
         assert response2.status_code in [200, 201]
         
         # Get tasks for user 1
-        user1_tasks_response = client.get(f"/users/{user1_id}/tasks")
+        user1_tasks_response = client.get(f"/api/users/{user1_id}/tasks")
         if user1_tasks_response.status_code == 200:
             user1_tasks = user1_tasks_response.json()
             # Verify only user 1's tasks are returned
@@ -276,15 +276,15 @@ class TestUserWorkflows:
             "title": "Task to be cascaded",
             "status": "pending"
         }
-        task_response = client.post("/tasks", json=task_data)
+        task_response = client.post("/api/tasks", json=task_data)
         assert task_response.status_code in [200, 201]
         task_id = task_response.json()["id"]
         
         # Delete user
-        delete_response = client.delete(f"/users/{user_id}")
+        delete_response = client.delete(f"/api/users/{user_id}")
         if delete_response.status_code in [200, 204]:
             # Verify task is also deleted
-            task_check = client.get(f"/tasks/{task_id}")
+            task_check = client.get(f"/api/tasks/{task_id}")
             assert task_check.status_code == 404
 
 
@@ -301,7 +301,7 @@ class TestPriorityScoreIntegration:
             "status": "pending"
         }
         
-        response = client.post("/tasks", json=task_data)
+        response = client.post("/api/tasks", json=task_data)
         assert response.status_code in [200, 201]
         task = response.json()
         
@@ -310,7 +310,7 @@ class TestPriorityScoreIntegration:
             assert 1 <= task["priority_score"] <= 100
         else:
             # Query priority score separately
-            score_response = client.get(f"/tasks/{task['id']}/priority")
+            score_response = client.get(f"/api/tasks/{task['id']}/priority")
             if score_response.status_code == 200:
                 score_data = score_response.json()
                 assert "score" in score_data
@@ -329,7 +329,7 @@ class TestPriorityScoreIntegration:
             "status": "pending"
         }
         
-        response = client.post("/tasks", json=task_data)
+        response = client.post("/api/tasks", json=task_data)
         assert response.status_code in [200, 201]
         task = response.json()
         
@@ -346,7 +346,7 @@ class TestPriorityScoreIntegration:
         task_id = sample_tasks[0]['id']
         
         # Get initial priority score
-        initial_response = client.get(f"/tasks/{task_id}")
+        initial_response = client.get(f"/api/tasks/{task_id}")
         if initial_response.status_code == 200:
             initial_task = initial_response.json()
             
@@ -354,11 +354,11 @@ class TestPriorityScoreIntegration:
             update_data = {
                 "deadline": (datetime.now() + timedelta(days=1)).isoformat()
             }
-            update_response = client.put(f"/tasks/{task_id}", json=update_data)
+            update_response = client.put(f"/api/tasks/{task_id}", json=update_data)
             assert update_response.status_code == 200
             
             # Get updated priority score
-            updated_response = client.get(f"/tasks/{task_id}")
+            updated_response = client.get(f"/api/tasks/{task_id}")
             if updated_response.status_code == 200:
                 updated_task = updated_response.json()
                 
@@ -389,7 +389,7 @@ class TestPriorityScoreIntegration:
             ]
         }
         
-        response = client.post("/ai/rank", json=tasks_data)
+        response = client.post("/api/ai/rank", json=tasks_data)
         assert response.status_code == 200
         rankings = response.json()
         
@@ -409,7 +409,7 @@ class TestTShirtSizeIntegration:
         task_id = sample_tasks[0]['id']
         
         # Request size estimation
-        response = client.post(f"/tasks/{task_id}/estimate-size")
+        response = client.post(f"/api/tasks/{task_id}/estimate-size")
         if response.status_code == 200:
             size_data = response.json()
             assert "tshirt_size" in size_data
@@ -429,7 +429,7 @@ class TestTShirtSizeIntegration:
             "estimated_duration": 1,
             "status": "pending"
         }
-        small_response = client.post("/tasks", json=small_task_data)
+        small_response = client.post("/api/tasks", json=small_task_data)
         assert small_response.status_code in [200, 201]
         small_task_id = small_response.json()["id"]
         
@@ -440,13 +440,13 @@ class TestTShirtSizeIntegration:
             "estimated_duration": 40,
             "status": "pending"
         }
-        large_response = client.post("/tasks", json=large_task_data)
+        large_response = client.post("/api/tasks", json=large_task_data)
         assert large_response.status_code in [200, 201]
         large_task_id = large_response.json()["id"]
         
         # Get size estimations
-        small_size_response = client.post(f"/tasks/{small_task_id}/estimate-size")
-        large_size_response = client.post(f"/tasks/{large_task_id}/estimate-size")
+        small_size_response = client.post(f"/api/tasks/{small_task_id}/estimate-size")
+        large_size_response = client.post(f"/api/tasks/{large_task_id}/estimate-size")
         
         if small_size_response.status_code == 200 and large_size_response.status_code == 200:
             small_size = small_size_response.json()["tshirt_size"]
@@ -472,20 +472,20 @@ class TestPerformanceIntegration:
             "estimated_duration": 2,
             "status": "pending"
         }
-        create_response = client.post("/tasks", json=task_data)
+        create_response = client.post("/api/tasks", json=task_data)
         assert create_response.status_code in [200, 201]
         task_id = create_response.json()["id"]
         
         # Update task
-        update_response = client.put(f"/tasks/{task_id}", json={"status": "in_progress"})
+        update_response = client.put(f"/api/tasks/{task_id}", json={"status": "in_progress"})
         assert update_response.status_code == 200
         
         # Get task
-        get_response = client.get(f"/tasks/{task_id}")
+        get_response = client.get(f"/api/tasks/{task_id}")
         assert get_response.status_code == 200
         
         # Delete task
-        delete_response = client.delete(f"/tasks/{task_id}")
+        delete_response = client.delete(f"/api/tasks/{task_id}")
         assert delete_response.status_code in [200, 204]
         
         end_time = time.time()
@@ -506,12 +506,12 @@ class TestPerformanceIntegration:
                 "title": f"Bulk Task {i}",
                 "status": "pending"
             }
-            response = client.post("/tasks", json=task_data)
+            response = client.post("/api/tasks", json=task_data)
             if response.status_code in [200, 201]:
                 task_ids.append(response.json()["id"])
         
         # Get all tasks
-        list_response = client.get("/tasks")
+        list_response = client.get("/api/tasks")
         assert list_response.status_code == 200
         
         end_time = time.time()
@@ -533,11 +533,11 @@ class TestErrorHandlingIntegration:
             "status": "invalid_status"  # Invalid status
         }
         
-        response = client.post("/tasks", json=invalid_task_data)
+        response = client.post("/api/tasks", json=invalid_task_data)
         assert response.status_code in [400, 422]
         
         # Verify no partial task was created
-        list_response = client.get("/tasks")
+        list_response = client.get("/api/tasks")
         if list_response.status_code == 200:
             tasks = list_response.json()
             # Should not contain task with empty title
@@ -550,7 +550,7 @@ class TestErrorHandlingIntegration:
             "depends_on_task_id": 99999  # Non-existent task
         }
         
-        response = client.post("/tasks/dependencies", json=dependency_data)
+        response = client.post("/api/tasks/dependencies", json=dependency_data)
         assert response.status_code in [400, 404, 422]
     
     def test_concurrent_task_updates(self, client, sample_tasks):
@@ -561,15 +561,15 @@ class TestErrorHandlingIntegration:
         update1 = {"status": "in_progress"}
         update2 = {"status": "completed"}
         
-        response1 = client.put(f"/tasks/{task_id}", json=update1)
-        response2 = client.put(f"/tasks/{task_id}", json=update2)
+        response1 = client.put(f"/api/tasks/{task_id}", json=update1)
+        response2 = client.put(f"/api/tasks/{task_id}", json=update2)
         
         # Both should succeed (last write wins) or handle optimistic locking
         assert response1.status_code == 200
         assert response2.status_code == 200
         
         # Verify final state
-        final_response = client.get(f"/tasks/{task_id}")
+        final_response = client.get(f"/api/tasks/{task_id}")
         assert final_response.status_code == 200
         assert final_response.json()["status"] in ["in_progress", "completed"]
 

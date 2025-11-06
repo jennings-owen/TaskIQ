@@ -4,7 +4,7 @@ from typing import List
 from app import schemas, crud
 from app.database import get_db
 
-router = APIRouter(prefix="/api", tags=["priority-scores"])
+router = APIRouter(tags=["priority-scores"])
 
 
 @router.get("/task_priority_scores", response_model=List[schemas.TaskPriorityScore])

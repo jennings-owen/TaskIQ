@@ -13,7 +13,7 @@ from app.auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 
-router = APIRouter(prefix="/api", tags=["users", "auth"])
+router = APIRouter(tags=["users", "auth"])
 
 @router.post("/auth/register", response_model=schemas.Token)
 def register(user: schemas.UserRegister, db: Session = Depends(get_db)):

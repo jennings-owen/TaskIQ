@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, CheckConstraint, Boolean
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, CheckConstraint, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
@@ -10,7 +10,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(String, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
     tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
 
 class Task(Base):
@@ -19,11 +19,11 @@ class Task(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text)
-    deadline = Column(String)
+    deadline = Column(DateTime)
     estimated_duration = Column(Integer)
     status = Column(String, default="pending")
-    created_at = Column(String, default=datetime.utcnow)
-    updated_at = Column(String, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user = relationship("User", back_populates="tasks")
     # relationships to TaskDependency are ambiguous because that table
     # has two foreign keys to tasks (task_id and depends_on_task_id).
@@ -46,6 +46,9 @@ class Task(Base):
 
 class TaskDependency(Base):
     __tablename__ = "task_dependencies"
+    __table_args__ = (
+        UniqueConstraint("task_id", "depends_on_task_id", name="uq_task_dependency"),
+    )
     id = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False)
     depends_on_task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False)

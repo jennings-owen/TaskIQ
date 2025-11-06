@@ -4,7 +4,7 @@ from typing import List
 from app import schemas, crud
 from app.database import get_db
 
-router = APIRouter(prefix="/api", tags=["tshirt-scores"])
+router = APIRouter(tags=["tshirt-scores"])
 
 
 @router.get("/task_tshirt_scores", response_model=List[schemas.TaskTShirtScore])

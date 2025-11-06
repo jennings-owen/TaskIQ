@@ -19,7 +19,7 @@ class TestAIRankEndpoint:
     def test_rank_tasks_success(self, client, ai_rank_data):
         """Test POST /ai/rank returns priority scores for tasks."""
         start_time = time.time()
-        response = client.post("/ai/rank", json=ai_rank_data)
+        response = client.post("/api/ai/rank", json=ai_rank_data)
         end_time = time.time()
         
         # Verify response time < 200ms (per PRD NFR)
@@ -47,7 +47,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code == 200
         result = response.json()
         assert len(result) == 1
@@ -55,7 +55,7 @@ class TestAIRankEndpoint:
     def test_rank_empty_task_list(self, client):
         """Test /ai/rank with empty task list."""
         data = {"tasks": []}
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         # Should either accept and return empty list or reject
         assert response.status_code in [200, 422]
         if response.status_code == 200:
@@ -71,7 +71,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         # Should handle gracefully or reject
         assert response.status_code in [200, 422]
     
@@ -85,7 +85,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         # Should handle gracefully or reject
         assert response.status_code in [200, 422]
     
@@ -100,7 +100,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code == 200
         result = response.json()
         # Past deadline should result in high priority or specific handling
@@ -119,7 +119,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         # Should reject invalid duration
         assert response.status_code in [422, 400]
     
@@ -134,7 +134,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         # Should accept zero duration (quick tasks)
         assert response.status_code == 200
     
@@ -149,7 +149,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code in [200, 422]
     
     def test_rank_multiple_tasks_ordering(self, client):
@@ -168,7 +168,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code == 200
         result = response.json()
         
@@ -191,8 +191,8 @@ class TestAIRankEndpoint:
             ]
         }
         
-        response1 = client.post("/ai/rank", json=data)
-        response2 = client.post("/ai/rank", json=data)
+        response1 = client.post("/api/ai/rank", json=data)
+        response2 = client.post("/api/ai/rank", json=data)
         
         assert response1.status_code == 200
         assert response2.status_code == 200
@@ -221,7 +221,7 @@ class TestAIRankEndpoint:
             ]
         }
         
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code == 200
         result = response.json()
         
@@ -249,7 +249,7 @@ class TestAIRankEndpoint:
             ]
         }
         
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code == 200
         result = response.json()
         
@@ -270,7 +270,7 @@ class TestAIRankEndpoint:
             ]
         }
         
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         if response.status_code == 200:
             result = response.json()
             
@@ -290,7 +290,7 @@ class TestAIRankEndpoint:
             ]
         }
         
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code == 200
         result = response.json()
         
@@ -304,7 +304,7 @@ class TestAIRankEndpoint:
         malformed_data = {
             "wrong_field": "value"
         }
-        response = client.post("/ai/rank", json=malformed_data)
+        response = client.post("/api/ai/rank", json=malformed_data)
         assert response.status_code == 422
     
     def test_rank_invalid_date_format(self, client):
@@ -318,7 +318,7 @@ class TestAIRankEndpoint:
                 }
             ]
         }
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         assert response.status_code == 422
 
 
@@ -328,7 +328,7 @@ class TestAISizeEndpoint:
     def test_size_recommendation_success(self, client, ai_size_data):
         """Test POST /ai/size returns T-shirt size recommendation."""
         start_time = time.time()
-        response = client.post("/ai/size", json=ai_size_data)
+        response = client.post("/api/ai/size", json=ai_size_data)
         end_time = time.time()
         
         # Verify response time < 200ms (per PRD NFR)
@@ -347,7 +347,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code == 200
         result = response.json()
         assert result["recommended_size"] in ["XS", "S", "M", "L", "XL"]
@@ -360,7 +360,7 @@ class TestAISizeEndpoint:
             "gender": "female",
             "fit_preference": "slim"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code == 200
         result = response.json()
         assert result["recommended_size"] in ["XS", "S", "M", "L", "XL"]
@@ -373,7 +373,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "loose"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code == 200
         result = response.json()
         assert result["recommended_size"] in ["XS", "S", "M", "L", "XL"]
@@ -385,7 +385,7 @@ class TestAISizeEndpoint:
             "weight_kg": 70
             # Missing gender and fit_preference
         }
-        response = client.post("/ai/size", json=incomplete_data)
+        response = client.post("/api/ai/size", json=incomplete_data)
         assert response.status_code == 422
     
     def test_size_negative_height(self, client):
@@ -396,7 +396,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code == 422
     
     def test_size_negative_weight(self, client):
@@ -407,7 +407,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code == 422
     
     def test_size_zero_height(self, client):
@@ -418,7 +418,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code == 422
     
     def test_size_extreme_height_short(self, client):
@@ -429,7 +429,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code in [200, 422]
         if response.status_code == 200:
             result = response.json()
@@ -444,7 +444,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code in [200, 422]
         if response.status_code == 200:
             result = response.json()
@@ -459,7 +459,7 @@ class TestAISizeEndpoint:
             "gender": "invalid",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         assert response.status_code == 422
     
     def test_size_invalid_fit_preference(self, client):
@@ -470,7 +470,7 @@ class TestAISizeEndpoint:
             "gender": "male",
             "fit_preference": "invalid"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         # Should reject invalid fit preference
         assert response.status_code == 422
     
@@ -482,7 +482,7 @@ class TestAISizeEndpoint:
             "gender": "MALE",
             "fit_preference": "regular"
         }
-        response = client.post("/ai/size", json=data)
+        response = client.post("/api/ai/size", json=data)
         # Should normalize case and accept
         assert response.status_code == 200
         if response.status_code == 200:
@@ -490,8 +490,8 @@ class TestAISizeEndpoint:
     
     def test_size_consistency(self, client, ai_size_data):
         """Test /ai/size returns consistent results for same input."""
-        response1 = client.post("/ai/size", json=ai_size_data)
-        response2 = client.post("/ai/size", json=ai_size_data)
+        response1 = client.post("/api/ai/size", json=ai_size_data)
+        response2 = client.post("/api/ai/size", json=ai_size_data)
         
         assert response1.status_code == 200
         assert response2.status_code == 200
@@ -517,8 +517,8 @@ class TestAISizeEndpoint:
             "fit_preference": "regular"
         }
         
-        response_low = client.post("/ai/size", json=low_bmi_data)
-        response_high = client.post("/ai/size", json=high_bmi_data)
+        response_low = client.post("/api/ai/size", json=low_bmi_data)
+        response_high = client.post("/api/ai/size", json=high_bmi_data)
         
         if response_low.status_code == 200 and response_high.status_code == 200:
             size_low = response_low.json()["recommended_size"]
@@ -533,7 +533,7 @@ class TestAISizeEndpoint:
         malformed_data = {
             "wrong_field": "value"
         }
-        response = client.post("/ai/size", json=malformed_data)
+        response = client.post("/api/ai/size", json=malformed_data)
         assert response.status_code == 422
 
 
@@ -554,7 +554,7 @@ class TestAIEndpointsPerformance:
         }
         
         start_time = time.time()
-        response = client.post("/ai/rank", json=data)
+        response = client.post("/api/ai/rank", json=data)
         end_time = time.time()
         
         assert response.status_code == 200
@@ -563,7 +563,7 @@ class TestAIEndpointsPerformance:
     def test_size_performance(self, client, ai_size_data):
         """Test /ai/size completes within 200ms."""
         start_time = time.time()
-        response = client.post("/ai/size", json=ai_size_data)
+        response = client.post("/api/ai/size", json=ai_size_data)
         end_time = time.time()
         
         assert response.status_code == 200

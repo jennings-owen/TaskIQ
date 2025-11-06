@@ -20,7 +20,7 @@ class TestTasksCRUD:
     
     def test_get_tasks_empty(self, client):
         """Test GET /tasks returns empty list when no tasks exist."""
-        response = client.get("/tasks")
+        response = client.get("/api/tasks")
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
@@ -28,7 +28,7 @@ class TestTasksCRUD:
     
     def test_get_tasks_with_data(self, client, sample_tasks):
         """Test GET /tasks returns list of tasks."""
-        response = client.get("/tasks")
+        response = client.get("/api/tasks")
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
@@ -42,7 +42,7 @@ class TestTasksCRUD:
     def test_create_task_success(self, client, task_data):
         """Test POST /tasks creates a new task successfully."""
         start_time = time.time()
-        response = client.post("/tasks", json=task_data)
+        response = client.post("/api/tasks", json=task_data)
         end_time = time.time()
         
         # Verify response time < 200ms (per PRD NFR)
@@ -63,14 +63,14 @@ class TestTasksCRUD:
         incomplete_data = {
             "description": "Missing title"
         }
-        response = client.post("/tasks", json=incomplete_data)
+        response = client.post("/api/tasks", json=incomplete_data)
         assert response.status_code == 422
     
     def test_create_task_invalid_status(self, client, task_data):
         """Test POST /tasks with invalid status value."""
         invalid_data = task_data.copy()
         invalid_data["status"] = "invalid_status"
-        response = client.post("/tasks", json=invalid_data)
+        response = client.post("/api/tasks", json=invalid_data)
         # Should reject invalid status per CHECK constraint
         assert response.status_code == 422
     
@@ -78,7 +78,7 @@ class TestTasksCRUD:
         """Test POST /tasks with negative estimated_duration."""
         invalid_data = task_data.copy()
         invalid_data["estimated_duration"] = -5
-        response = client.post("/tasks", json=invalid_data)
+        response = client.post("/api/tasks", json=invalid_data)
         # Should reject negative duration
         assert response.status_code == 422
     
@@ -86,14 +86,14 @@ class TestTasksCRUD:
         """Test POST /tasks with deadline in the past."""
         past_data = task_data.copy()
         past_data["deadline"] = (datetime.now() - timedelta(days=5)).isoformat()
-        response = client.post("/tasks", json=past_data)
+        response = client.post("/api/tasks", json=past_data)
         # Should accept past deadlines (user may be logging overdue tasks)
         assert response.status_code == 201
     
     def test_get_task_by_id_success(self, client, sample_tasks):
         """Test GET /tasks/{id} returns specific task."""
         task_id = sample_tasks[0]['id']
-        response = client.get(f"/tasks/{task_id}")
+        response = client.get(f"/api/tasks/{task_id}")
         assert response.status_code == 200
         data = response.json()
         assert data["id"] == task_id
@@ -102,12 +102,12 @@ class TestTasksCRUD:
     
     def test_get_task_by_id_not_found(self, client):
         """Test GET /tasks/{id} with non-existent ID returns 404."""
-        response = client.get("/tasks/99999")
+        response = client.get("/api/tasks/99999")
         assert response.status_code == 404
     
     def test_get_task_invalid_id(self, client):
         """Test GET /tasks/{id} with invalid ID format."""
-        response = client.get("/tasks/invalid")
+        response = client.get("/api/tasks/invalid")
         assert response.status_code == 422
     
     def test_update_task_success(self, client, sample_tasks):
@@ -121,7 +121,7 @@ class TestTasksCRUD:
         }
         
         start_time = time.time()
-        response = client.put(f"/tasks/{task_id}", json=update_data)
+        response = client.put(f"/api/tasks/{task_id}", json=update_data)
         end_time = time.time()
         
         # Verify response time < 200ms
@@ -141,7 +141,7 @@ class TestTasksCRUD:
             "title": "Updated Title",
             "status": "completed"
         }
-        response = client.put("/tasks/99999", json=update_data)
+        response = client.put("/api/tasks/99999", json=update_data)
         assert response.status_code == 404
     
     def test_update_task_partial(self, client, sample_tasks):
@@ -153,7 +153,7 @@ class TestTasksCRUD:
             "status": "completed"
         }
         
-        response = client.put(f"/tasks/{task_id}", json=partial_data)
+        response = client.put(f"/api/tasks/{task_id}", json=partial_data)
         # Should accept partial updates (PATCH-like behavior)
         assert response.status_code == 200
         assert response.json()["status"] == "completed"
@@ -162,21 +162,21 @@ class TestTasksCRUD:
         """Test DELETE /tasks/{id} deletes task successfully."""
         task_id = sample_tasks[0]['id']
         
-        response = client.delete(f"/tasks/{task_id}")
+        response = client.delete(f"/api/tasks/{task_id}")
         assert response.status_code == 204
         
         # Verify task is deleted
-        get_response = client.get(f"/tasks/{task_id}")
+        get_response = client.get(f"/api/tasks/{task_id}")
         assert get_response.status_code == 404
     
     def test_delete_task_not_found(self, client):
         """Test DELETE /tasks/{id} with non-existent ID returns 404."""
-        response = client.delete("/tasks/99999")
+        response = client.delete("/api/tasks/99999")
         assert response.status_code == 404
     
     def test_delete_task_invalid_id(self, client):
         """Test DELETE /tasks/{id} with invalid ID format."""
-        response = client.delete("/tasks/invalid")
+        response = client.delete("/api/tasks/invalid")
         assert response.status_code == 422
 
 
@@ -185,7 +185,7 @@ class TestTasksPriorityScore:
     
     def test_task_has_priority_score(self, client, task_data):
         """Test that created tasks automatically get a priority_score."""
-        response = client.post("/tasks", json=task_data)
+        response = client.post("/api/tasks", json=task_data)
         if response.status_code in [200, 201]:
             data = response.json()
             # Priority score should be calculated automatically
@@ -193,7 +193,7 @@ class TestTasksPriorityScore:
     
     def test_priority_score_range(self, client, task_data):
         """Test that priority_score is within valid range (1-100)."""
-        response = client.post("/tasks", json=task_data)
+        response = client.post("/api/tasks", json=task_data)
         if response.status_code in [200, 201]:
             data = response.json()
             if "priority_score" in data:
@@ -206,7 +206,7 @@ class TestTasksPerformance:
     def test_get_tasks_performance(self, client, sample_tasks):
         """Test GET /tasks completes within 200ms."""
         start_time = time.time()
-        response = client.get("/tasks")
+        response = client.get("/api/tasks")
         end_time = time.time()
         
         assert response.status_code == 200
@@ -215,7 +215,7 @@ class TestTasksPerformance:
     def test_create_task_performance(self, client, task_data):
         """Test POST /tasks completes within 200ms."""
         start_time = time.time()
-        response = client.post("/tasks", json=task_data)
+        response = client.post("/api/tasks", json=task_data)
         end_time = time.time()
         
         assert response.status_code in [200, 201]
@@ -229,7 +229,7 @@ class TestTasksEdgeCases:
         """Test task creation with extremely long title."""
         long_data = task_data.copy()
         long_data["title"] = "A" * 1000  # 1000 character title
-        response = client.post("/tasks", json=long_data)
+        response = client.post("/api/tasks", json=long_data)
         # Should accept long titles or enforce reasonable limit
         assert response.status_code in [201, 422]
     
@@ -237,7 +237,7 @@ class TestTasksEdgeCases:
         """Test task creation with empty title."""
         empty_data = task_data.copy()
         empty_data["title"] = ""
-        response = client.post("/tasks", json=empty_data)
+        response = client.post("/api/tasks", json=empty_data)
         # Should reject empty title
         assert response.status_code == 422
     
@@ -250,7 +250,7 @@ class TestTasksEdgeCases:
             "estimated_duration": None,
             "status": "pending"
         }
-        response = client.post("/tasks", json=minimal_data)
+        response = client.post("/api/tasks", json=minimal_data)
         # Should accept null optional fields
         assert response.status_code == 201
     
@@ -260,7 +260,7 @@ class TestTasksEdgeCases:
         for i in range(5):
             data = task_data.copy()
             data["title"] = f"Task {i}"
-            response = client.post("/tasks", json=data)
+            response = client.post("/api/tasks", json=data)
             responses.append(response)
         
         # All should succeed
@@ -280,12 +280,12 @@ class TestTasksSecurity:
         injection_data = task_data.copy()
         injection_data["title"] = "'; DROP TABLE tasks; --"
         
-        response = client.post("/tasks", json=injection_data)
+        response = client.post("/api/tasks", json=injection_data)
         # Should either accept as literal string or sanitize
         assert response.status_code in [201, 422]
         
         # Verify tasks table still exists by listing tasks
-        list_response = client.get("/tasks")
+        list_response = client.get("/api/tasks")
         assert list_response.status_code == 200
     
     def test_xss_in_description(self, client, task_data):
@@ -293,13 +293,13 @@ class TestTasksSecurity:
         xss_data = task_data.copy()
         xss_data["description"] = "<script>alert('XSS')</script>"
         
-        response = client.post("/tasks", json=xss_data)
+        response = client.post("/api/tasks", json=xss_data)
         # Should accept as literal string (escaping happens on frontend)
         assert response.status_code == 201
         
         # Verify data is stored as-is
         task_id = response.json()["id"]
-        get_response = client.get(f"/tasks/{task_id}")
+        get_response = client.get(f"/api/tasks/{task_id}")
         assert get_response.status_code == 200
         assert "<script>" in get_response.json()["description"]
     
@@ -309,12 +309,12 @@ class TestTasksSecurity:
         unicode_data["title"] = "Task with émojis 🚀 and spëcial çhars"
         unicode_data["description"] = "Testing 中文字符 and العربية"
         
-        response = client.post("/tasks", json=unicode_data)
+        response = client.post("/api/tasks", json=unicode_data)
         assert response.status_code == 201
         
         # Verify unicode is preserved
         task_id = response.json()["id"]
-        get_response = client.get(f"/tasks/{task_id}")
+        get_response = client.get(f"/api/tasks/{task_id}")
         assert get_response.status_code == 200
         assert "🚀" in get_response.json()["title"]
     
@@ -323,7 +323,7 @@ class TestTasksSecurity:
         # This test assumes user authentication will be implemented
         # For now, verify endpoint doesn't expose sensitive data
         task_id = sample_tasks[0]['id']
-        response = client.get(f"/tasks/{task_id}")
+        response = client.get(f"/api/tasks/{task_id}")
         
         # Should either require auth or return task data
         assert response.status_code in [200, 401, 403]
@@ -335,7 +335,7 @@ class TestTasksUserRelationship:
     def test_task_requires_user_id(self, client, task_data):
         """Test tasks must be associated with a user."""
         # Task data should include user_id
-        response = client.post("/tasks", json=task_data)
+        response = client.post("/api/tasks", json=task_data)
         assert response.status_code == 201
         
         task = response.json()
@@ -356,7 +356,7 @@ class TestTasksUserRelationship:
     
     def test_filter_tasks_by_status(self, client, sample_tasks):
         """Test filtering tasks by status."""
-        response = client.get("/tasks?status=pending")
+        response = client.get("/api/tasks?status=pending")
         
         if response.status_code == 200:
             tasks = response.json()
@@ -384,7 +384,7 @@ class TestTasksStatusTransitions:
             pytest.skip("No pending task available")
         
         update_data = {"status": "in_progress"}
-        response = client.put(f"/tasks/{pending_task['id']}", json=update_data)
+        response = client.put(f"/api/tasks/{pending_task['id']}", json=update_data)
         
         assert response.status_code == 200
         assert response.json()["status"] == "in_progress"
@@ -396,7 +396,7 @@ class TestTasksStatusTransitions:
             pytest.skip("No in_progress task available")
         
         update_data = {"status": "completed"}
-        response = client.put(f"/tasks/{in_progress_task['id']}", json=update_data)
+        response = client.put(f"/api/tasks/{in_progress_task['id']}", json=update_data)
         
         assert response.status_code == 200
         assert response.json()["status"] == "completed"
@@ -406,7 +406,7 @@ class TestTasksStatusTransitions:
         task_id = sample_tasks[0]['id']
         
         update_data = {"status": "blocked"}
-        response = client.put(f"/tasks/{task_id}", json=update_data)
+        response = client.put(f"/api/tasks/{task_id}", json=update_data)
         
         assert response.status_code == 200
         assert response.json()["status"] == "blocked"
@@ -418,7 +418,7 @@ class TestTasksStatusTransitions:
         
         for status in valid_statuses:
             update_data = {"status": status}
-            response = client.put(f"/tasks/{task_id}", json=update_data)
+            response = client.put(f"/api/tasks/{task_id}", json=update_data)
             
             assert response.status_code == 200
             assert response.json()["status"] == status

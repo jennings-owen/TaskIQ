@@ -5,7 +5,7 @@ from app import schemas, crud, models
 from app.database import get_db
 from app.auth import get_current_active_user
 
-router = APIRouter(prefix="/api", tags=["tasks"])
+router = APIRouter(tags=["tasks"])
 
 
 @router.get("/tasks", response_model=List[schemas.TaskResponse])

@@ -4,7 +4,7 @@ from typing import List
 from app import schemas, crud
 from app.database import get_db
 
-router = APIRouter(prefix="/api", tags=["task-dependencies"])
+router = APIRouter(tags=["task-dependencies"])
 
 
 @router.get("/tasks/dependencies", response_model=List[schemas.TaskDependency])

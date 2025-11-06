@@ -161,7 +161,35 @@ class AIRankResponseItem(BaseModel):
     task_id: int
     priority_score: int
 
+class TaskSizeRequest(BaseModel):
+    """
+    Request for T-shirt size estimation of a task.
+    
+    T-shirt sizing is an Agile estimation technique for relative effort/complexity.
+    """
+    title: str
+    description: Optional[str] = None
+    estimated_duration: Optional[int] = None
+    deadline: Optional[datetime] = None
+    has_dependencies: bool = False
+    task_id: Optional[int] = None  # For persistence
+
+    @validator("title")
+    def validate_title(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Title cannot be empty")
+        return v
+
+    @validator("estimated_duration")
+    def validate_estimated_duration(cls, v):
+        if v is not None and v < 0:
+            raise ValueError("Estimated duration cannot be negative")
+        return v
+
+
+# Keep old AISizeRequest for backward compatibility (deprecated)
 class AISizeRequest(BaseModel):
+    """DEPRECATED: Use TaskSizeRequest instead. This is for physical t-shirt sizing."""
     height_cm: int
     weight_kg: int
     gender: str
@@ -193,8 +221,10 @@ class AISizeRequest(BaseModel):
             raise ValueError(f"Fit preference must be one of: {', '.join(allowed_fits)}")
         return v.lower()
 
+
 class AISizeResponse(BaseModel):
     recommended_size: str
+    rationale: Optional[str] = None
 
 
 class UserCreate(BaseModel):

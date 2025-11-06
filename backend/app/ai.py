@@ -4,7 +4,7 @@ from app import schemas, models
 from app.database import get_db
 from datetime import datetime
 
-router = APIRouter(prefix="/api", tags=["ai"])
+router = APIRouter(tags=["ai"])
 
 
 def _compute_score(deadline: datetime | None, estimated_duration: int | None) -> int:
@@ -43,58 +43,161 @@ def ai_rank(request: schemas.AIRankRequest, db: Session = Depends(get_db), persi
 
 
 @router.post("/ai/size", response_model=schemas.AISizeResponse)
-def ai_size(request: schemas.AISizeRequest, db: Session = Depends(get_db), persist: bool = Query(False)):
-    gender = request.gender.lower()
-    if gender == "male":
-        if request.height_cm < 165:
-            size = "S"
-        elif request.height_cm < 180:
-            size = "M"
+def ai_size(request: schemas.TaskSizeRequest, db: Session = Depends(get_db), persist: bool = Query(False)):
+    """
+    Estimate task complexity using T-shirt sizing (XS, S, M, L, XL).
+    
+    T-shirt sizing is an Agile estimation technique that represents relative effort,
+    complexity, and scope of tasks. Factors considered:
+    - Title/description complexity (keywords, length)
+    - Estimated duration (hours)
+    - Deadline urgency
+    - Dependencies (if provided)
+    """
+    size, rationale = _estimate_task_size(
+        title=request.title,
+        description=request.description,
+        estimated_duration=request.estimated_duration,
+        deadline=request.deadline,
+        has_dependencies=request.has_dependencies
+    )
+
+    if persist and request.task_id:
+        db_task = db.query(models.Task).filter(models.Task.id == request.task_id).first()
+        if not db_task:
+            raise HTTPException(status_code=400, detail=f"task_id {request.task_id} does not exist")
+
+        existing = db.query(models.TaskTShirtScore).filter(models.TaskTShirtScore.task_id == request.task_id).first()
+        if existing:
+            existing.tshirt_size = size
+            existing.rationale = rationale
         else:
-            size = "L"
+            existing = models.TaskTShirtScore(task_id=request.task_id, tshirt_size=size, rationale=rationale)
+            db.add(existing)
+        db.commit()
+
+    return schemas.AISizeResponse(recommended_size=size, rationale=rationale)
+
+
+def _estimate_task_size(
+    title: str,
+    description: str | None,
+    estimated_duration: int | None,
+    deadline: datetime | None,
+    has_dependencies: bool = False
+) -> tuple[str, str]:
+    """
+    Estimate task size based on complexity factors.
+    
+    Returns: (size, rationale) tuple
+    """
+    complexity_score = 0
+    factors = []
+    
+    # Factor 1: Estimated duration (0-40 points)
+    if estimated_duration:
+        if estimated_duration <= 2:
+            complexity_score += 5
+            factors.append(f"duration: {estimated_duration}h (quick)")
+        elif estimated_duration <= 8:
+            complexity_score += 15
+            factors.append(f"duration: {estimated_duration}h (moderate)")
+        elif estimated_duration <= 24:
+            complexity_score += 30
+            factors.append(f"duration: {estimated_duration}h (substantial)")
+        else:
+            complexity_score += 40
+            factors.append(f"duration: {estimated_duration}h (extensive)")
     else:
-        if request.height_cm < 155:
-            size = "XS"
-        elif request.height_cm < 170:
-            size = "S"
-        else:
-            size = "M"
-
-    if persist:
-        # persistence requires a task_id to be provided in the request body (not part of AISizeRequest)
-        # for now, we will not allow persistence without an explicit task_id query param
-        raise HTTPException(status_code=400, detail="Persistence for /ai/size requires a task-specific endpoint or task_id parameter")
-
-    return schemas.AISizeResponse(recommended_size=size)
+        complexity_score += 10
+        factors.append("duration: unknown (assumed moderate)")
+    
+    # Factor 2: Title/description complexity (0-30 points)
+    title_lower = title.lower()
+    desc_lower = (description or "").lower()
+    combined_text = title_lower + " " + desc_lower
+    
+    # Check for complexity keywords
+    complex_keywords = ["refactor", "redesign", "migrate", "integrate", "architecture", 
+                        "security", "performance", "optimization", "database", "api"]
+    simple_keywords = ["fix", "update", "add", "remove", "change", "typo", "text"]
+    
+    complex_count = sum(1 for kw in complex_keywords if kw in combined_text)
+    simple_count = sum(1 for kw in simple_keywords if kw in combined_text)
+    
+    if complex_count >= 2:
+        complexity_score += 30
+        factors.append("complexity: high (multiple complex keywords)")
+    elif complex_count >= 1:
+        complexity_score += 20
+        factors.append("complexity: moderate (complex keywords)")
+    elif simple_count >= 1:
+        complexity_score += 5
+        factors.append("complexity: low (simple task)")
+    else:
+        complexity_score += 15
+        factors.append("complexity: moderate (neutral)")
+    
+    # Factor 3: Description length (0-15 points)
+    if description and len(description) > 200:
+        complexity_score += 15
+        factors.append("scope: detailed requirements")
+    elif description and len(description) > 50:
+        complexity_score += 8
+        factors.append("scope: moderate requirements")
+    else:
+        complexity_score += 3
+        factors.append("scope: brief requirements")
+    
+    # Factor 4: Dependencies (0-15 points)
+    if has_dependencies:
+        complexity_score += 15
+        factors.append("dependencies: yes (coordination needed)")
+    
+    # Map complexity score to T-shirt size
+    # Total possible: 0-100 points
+    if complexity_score <= 20:
+        size = "XS"
+    elif complexity_score <= 40:
+        size = "S"
+    elif complexity_score <= 60:
+        size = "M"
+    elif complexity_score <= 80:
+        size = "L"
+    else:
+        size = "XL"
+    
+    rationale = f"Score: {complexity_score}/100. Factors: {'; '.join(factors)}"
+    return size, rationale
 
 
 @router.post("/tasks/{task_id}/ai/size", response_model=schemas.AISizeResponse)
-def task_ai_size(task_id: int, request: schemas.AISizeRequest, db: Session = Depends(get_db), persist: bool = Query(False)):
-    """Compute a t-shirt size for a specific task and optionally persist it to task_tshirt_scores."""
-    gender = request.gender.lower()
-    if gender == "male":
-        if request.height_cm < 165:
-            size = "S"
-        elif request.height_cm < 180:
-            size = "M"
-        else:
-            size = "L"
-    else:
-        if request.height_cm < 155:
-            size = "XS"
-        elif request.height_cm < 170:
-            size = "S"
-        else:
-            size = "M"
-
-    # If persist requested, verify task exists and upsert into task_tshirt_scores
+def task_ai_size(task_id: int, db: Session = Depends(get_db), persist: bool = Query(True)):
+    """
+    Estimate T-shirt size for an existing task based on its attributes.
+    Automatically persists the result to task_tshirt_scores.
+    """
+    db_task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not db_task:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+    
+    # Check if task has dependencies
+    has_dependencies = db.query(models.TaskDependency).filter(
+        models.TaskDependency.task_id == task_id
+    ).first() is not None
+    
+    size, rationale = _estimate_task_size(
+        title=db_task.title,
+        description=db_task.description,
+        estimated_duration=db_task.estimated_duration,
+        deadline=db_task.deadline,
+        has_dependencies=has_dependencies
+    )
+    
     if persist:
-        db_task = db.query(models.Task).filter(models.Task.id == task_id).first()
-        if not db_task:
-            raise HTTPException(status_code=400, detail=f"task_id {task_id} does not exist")
-
-        existing = db.query(models.TaskTShirtScore).filter(models.TaskTShirtScore.task_id == task_id).first()
-        rationale = f"height_cm={request.height_cm}, weight_kg={request.weight_kg}, gender={request.gender}, fit={request.fit_preference}"
+        existing = db.query(models.TaskTShirtScore).filter(
+            models.TaskTShirtScore.task_id == task_id
+        ).first()
         if existing:
             existing.tshirt_size = size
             existing.rationale = rationale
@@ -102,5 +205,5 @@ def task_ai_size(task_id: int, request: schemas.AISizeRequest, db: Session = Dep
             existing = models.TaskTShirtScore(task_id=task_id, tshirt_size=size, rationale=rationale)
             db.add(existing)
         db.commit()
-
-    return schemas.AISizeResponse(recommended_size=size)
+    
+    return schemas.AISizeResponse(recommended_size=size, rationale=rationale)

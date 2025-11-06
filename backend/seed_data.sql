@@ -1,7 +1,7 @@
 -- Populate 'users' table
-INSERT INTO users (id, name, email, password_hash) VALUES (1, 'Alice Johnson', 'alice.j@agiletaskiq.com', 'hash123');
-INSERT INTO users (id, name, email, password_hash) VALUES (2, 'Bob Williams', 'bob.w@agiletaskiq.com', 'hash456');
-INSERT INTO users (id, name, email, password_hash) VALUES (3, 'Carol Davis', 'carol.d@consultingfirm.com', 'hash789');
+INSERT INTO users (id, name, email, password_hash) VALUES (1, 'Alice Johnson', 'alice.j@agiletaskiq.com', 'sha256$a89e59d19d98146794a2a371f7db8a9d$0fee0043e6f5aad4bfcbb659d763ebd02e2f09a5bc253ed272851d3b428bace4');
+INSERT INTO users (id, name, email, password_hash) VALUES (2, 'Bob Williams', 'bob.w@agiletaskiq.com', 'sha256$62aa657e22a07e959790416e2c5b31d7$41f56f8dff8e079a11bb11786083b0e0329f4f96a2ec09f1fdd88693e493a46a');
+INSERT INTO users (id, name, email, password_hash) VALUES (3, 'Carol Davis', 'carol.d@consultingfirm.com', 'sha256$2c57f6295cfa79e61cef67e57ba60219$029f077cbfdfd722477524a61e2d3d5fa9773efa93c344e02cd952431cbc7e84');
 
 -- Populate 'tasks' table
 INSERT INTO tasks (id, user_id, title, description, deadline, estimated_duration, status) VALUES (1, 2, 'Implement user authentication endpoint', 'Create the /login and /register API endpoints using JWT for user access.', '2024-11-25T17:00:00Z', 8, 'pending');
