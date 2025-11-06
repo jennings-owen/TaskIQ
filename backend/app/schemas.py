@@ -220,7 +220,7 @@ class User(BaseModel):
     is_active: bool
     created_at: Optional[datetime] = None
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PasswordChange(BaseModel):
@@ -244,7 +244,7 @@ class TaskDependency(BaseModel):
     depends_on_task_id: int
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TaskPriorityScoreCreate(BaseModel):
@@ -257,7 +257,7 @@ class TaskPriorityScore(BaseModel):
     task_id: int
     score: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TaskTShirtScoreCreate(BaseModel):
@@ -272,4 +272,4 @@ class TaskTShirtScore(BaseModel):
     tshirt_size: str
     rationale: Optional[str] = None
     class Config:
-        orm_mode = True
+        from_attributes = True
