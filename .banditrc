@@ -42,3 +42,4 @@ tests = []
 # Set in CI/CD pipeline, not here
 # format = json
 
+
