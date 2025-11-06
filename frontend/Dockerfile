@@ -14,7 +14,9 @@ ENV REACT_APP_BACK_END_URL=$REACT_APP_BACK_END_URL
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+# Disable strict SSL for corporate proxy/firewall environments
+RUN npm config set strict-ssl false && \
+    npm install --legacy-peer-deps
 
 # Copy application code
 COPY . .

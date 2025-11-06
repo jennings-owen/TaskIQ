@@ -42,21 +42,34 @@ docker info
 node --version
 ```
 
-### Install Frontend Dependencies
+### Corporate Environment Configuration
 
-**Important**: Before running Docker, install npm packages locally:
+**SSL Certificate Handling:**
 
-```bash
-cd frontend
-npm install --legacy-peer-deps
-cd ..
+The frontend Dockerfile is pre-configured for corporate environments with SSL inspection/proxies:
+
+```dockerfile
+# Disable strict SSL for corporate proxy/firewall environments
+RUN npm config set strict-ssl false && \
+    npm install --legacy-peer-deps
 ```
 
-This installs packages to `frontend/node_modules`, which Docker will copy and use for building. This approach:
-- Avoids npm install issues in Docker
-- Uses your local environment's packages
-- Faster builds (no network calls in Docker)
-- Consistent with local development
+This resolves `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` errors common in Booz Allen Hamilton and other corporate networks.
+
+**Alternative: Use Corporate CA Certificates**
+
+If your security policy requires SSL validation, add your corporate CA certificate:
+
+```dockerfile
+# Install ca-certificates package
+RUN apk add --no-cache ca-certificates
+
+# Copy corporate CA certificate
+COPY corporate-ca.crt /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+```
+
+Then use standard npm install without disabling SSL.
 
 ## Quick Start
 
@@ -324,28 +337,37 @@ docker compose up --build -d frontend
 - **Base Image**: python:3.11-slim
 - **Working Directory**: /app
 - **Exposed Port**: 8000
-- **User**: appuser (non-root)
+- **User**: appuser (non-root, UID 1000)
 - **Health Check**: GET /status every 30s
-- **Build Strategy**: Installs Python packages from requirements.txt
+- **Build Strategy**: 
+  - Installs Python packages from requirements.txt
+  - Copies backend code from parent context
+  - Runs with uvicorn for hot-reload in development
 
 #### Frontend Container (Production)
 - **Base Image**: node:22-alpine (builder), nginx:alpine (runtime)
 - **Working Directory**: /app (build), /usr/share/nginx/html (runtime)
 - **Exposed Port**: 3000
-- **User**: appuser (non-root)
+- **User**: appuser (non-root, UID 1000)
 - **Health Check**: wget localhost:3000 every 30s
 - **Build Strategy**: 
-  - Stage 1: Copies local node_modules and runs `npm run build`
-  - Stage 2: Serves static files with nginx
-  - Uses local node_modules to avoid npm install issues in Docker
+  - Stage 1 (Builder): 
+    - Installs npm packages with `--legacy-peer-deps`
+    - Disables strict SSL for corporate environments
+    - Runs `npm run build` to create optimized production bundle
+  - Stage 2 (Runtime):
+    - Copies built assets from builder stage
+    - Serves static files with nginx
+    - Custom nginx.conf for SPA routing
+- **Security**: Non-root user, minimal attack surface, no dev dependencies in runtime
 
 #### Frontend Container (Development)
 - **Base Image**: node:22-alpine
 - **Working Directory**: /app
 - **Exposed Port**: 3000
 - **User**: appuser (non-root)
-- **Build Strategy**: Copies local node_modules and runs `npm start`
-- **Hot-Reload**: Enabled via volume mounts
+- **Build Strategy**: Runs `npm start` with hot-reload
+- **Hot-Reload**: Enabled via volume mounts and CHOKIDAR_USEPOLLING
 
 ### Network Configuration
 
@@ -427,6 +449,20 @@ docker compose exec frontend env | grep CHOKIDAR
 docker compose restart
 ```
 
+### SSL Certificate Errors (npm install)
+
+**Problem**: `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` during build
+
+**Cause**: Corporate proxy/firewall with SSL inspection
+
+**Solution**: Already fixed in Dockerfile with:
+```dockerfile
+RUN npm config set strict-ssl false && \
+    npm install --legacy-peer-deps
+```
+
+If you need to re-enable SSL validation, remove the `npm config set strict-ssl false` line and add your corporate CA certificate.
+
 ### CORS Errors
 
 **Problem**: Frontend can't reach backend
@@ -436,6 +472,11 @@ docker compose restart
 2. Verify both containers are running: `docker compose ps`
 3. Check backend logs: `docker compose logs backend`
 4. Ensure frontend uses correct backend URL
+5. Rebuild frontend if `REACT_APP_BACK_END_URL` changed:
+   ```bash
+   docker-compose build --no-cache frontend
+   docker-compose up -d
+   ```
 
 ### Permission Errors
 
@@ -491,24 +532,50 @@ The current Docker setup is optimized for development. For production:
 6. **Logging**: Configure structured logging
 7. **Monitoring**: Add health checks and metrics
 
-### Example Production Frontend Dockerfile
+### Current Production Frontend Dockerfile
+
+The project already uses a production-optimized multi-stage build:
 
 ```dockerfile
-# Build stage
+# Stage 1: Build React application
 FROM node:22-alpine AS builder
 WORKDIR /app
+ARG REACT_APP_BACK_END_URL=http://localhost:8000
+ENV REACT_APP_BACK_END_URL=$REACT_APP_BACK_END_URL
+
 COPY package*.json ./
-RUN npm ci --production
+RUN npm config set strict-ssl false && \
+    npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# Production stage
+# Stage 2: Serve with nginx
 FROM nginx:alpine
 COPY --from=builder /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
+
+# Security: non-root user
+RUN (addgroup -g 1000 appgroup 2>/dev/null || true) && \
+    adduser -D -u 1000 appuser 2>/dev/null || true && \
+    chown -R 1000:1000 /usr/share/nginx/html && \
+    chown -R 1000:1000 /var/cache/nginx && \
+    chown -R 1000:1000 /var/log/nginx && \
+    touch /var/run/nginx.pid && \
+    chown -R 1000:1000 /var/run/nginx.pid
+
+USER 1000
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
 CMD ["nginx", "-g", "daemon off;"]
 ```
+
+**Features:**
+- Multi-stage build (builder + runtime)
+- Corporate SSL handling
+- Non-root user (UID 1000)
+- Health checks
+- Optimized for production
 
 ## Additional Resources
 
@@ -518,6 +585,35 @@ CMD ["nginx", "-g", "daemon off;"]
 - [React Production Build](https://create-react-app.dev/docs/production-build/)
 
 ## Common Issues & Solutions
+
+### npm Install Fails with SSL Certificate Error
+
+**Error**: `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` during Docker build
+
+**Symptoms**:
+```
+npm http fetch GET https://registry.npmjs.org/... attempt 1 failed with UNABLE_TO_GET_ISSUER_CERT_LOCALLY
+npm error Exit handler never called!
+```
+
+**Root Cause**: Corporate proxy/firewall with SSL inspection (common in Booz Allen Hamilton and similar environments)
+
+**Solution**: Already implemented in `frontend/Dockerfile`:
+```dockerfile
+RUN npm config set strict-ssl false && \
+    npm install --legacy-peer-deps
+```
+
+**If you still see this error**:
+1. Ensure you're using the latest Dockerfile
+2. Rebuild without cache:
+   ```bash
+   docker-compose build --no-cache frontend
+   docker-compose up -d
+   ```
+
+**Alternative (for strict security requirements)**:
+Add your corporate CA certificate to the Dockerfile before npm install.
 
 ### Docker Desktop Not Running
 
@@ -711,11 +807,48 @@ docker-compose up -d
 ## Summary
 
 This Docker setup provides:
-- **Production builds**: Optimized with `npm run build` and nginx
+- **Production builds**: Multi-stage optimized with `npm run build` and nginx
 - **Development mode**: Hot-reload for rapid iteration
+- **Test mode**: Automated test suite execution
 - **Single-command startup**: Easy for all team members
 - **Cross-platform**: Works on Windows, Linux, and macOS
+- **Corporate-ready**: SSL handling for proxy/firewall environments
+- **Security**: Non-root users, health checks, minimal attack surface
 - **Industry standard**: Follows Docker and microservices best practices
 
+### Key Features
+
+**Multi-Stage Build:**
+- Frontend: node:22-alpine (builder) → nginx:alpine (runtime)
+- Reduces final image size by excluding build dependencies
+- Optimized for production deployment
+
+**Corporate Environment Support:**
+- SSL certificate handling for proxy environments
+- Configurable via environment variables
+- Works out-of-the-box at Booz Allen Hamilton and similar organizations
+
+**Security Hardening:**
+- Non-root users (UID 1000) in all containers
+- Health checks for monitoring
+- Minimal base images (alpine, slim)
+- No development dependencies in production
+
+**Developer Experience:**
+- Three modes: Production, Development, Test
+- Hot-reload in development mode
+- Single-command startup scripts
+- Comprehensive troubleshooting documentation
+
 The dual-container architecture maintains separation of concerns and provides a solid foundation for both development and production deployment.
+
+## Related Documentation
+
+- **[DOCKER_START_GUIDE.md](../DOCKER_START_GUIDE.md)** - Quick start guide for three operating modes
+- **[README.md](../README.md)** - Main project documentation
+- **[ENV_FORMAT.md](ENV_FORMAT.md)** - Environment variable reference
+- **[docker-compose.yml](../docker-compose.yml)** - Production/development configuration
+- **[docker-compose.test.yml](../docker-compose.test.yml)** - Test configuration
+- **[frontend/Dockerfile](../frontend/Dockerfile)** - Frontend container configuration
+- **[backend/Dockerfile](../backend/Dockerfile)** - Backend container configuration
 
