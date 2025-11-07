@@ -366,40 +366,6 @@ class TestPriorityScoreIntegration:
                 # Verify task was updated successfully
                 assert updated_task["id"] == task_id
     
-    def test_bulk_priority_ranking(self, client, sample_user):
-        """Test bulk priority ranking via /ai/rank endpoint."""
-        tasks_data = {
-            "tasks": [
-                {
-                    "title": "Urgent Task",
-                    "deadline": (datetime.now() + timedelta(days=1)).isoformat(),
-                    "estimated_duration": 2
-                },
-                {
-                    "title": "Normal Task",
-                    "deadline": (datetime.now() + timedelta(days=5)).isoformat(),
-                    "estimated_duration": 3
-                },
-                {
-                    "title": "Low Priority Task",
-                    "deadline": (datetime.now() + timedelta(days=15)).isoformat(),
-                    "estimated_duration": 1
-                }
-            ]
-        }
-        
-        response = client.post("/api/ai/rank", json=tasks_data)
-        assert response.status_code == 200
-        rankings = response.json()
-        
-        assert len(rankings) == 3
-        
-        # Verify urgent task has highest priority
-        scores = [r["priority_score"] for r in rankings if "priority_score" in r]
-        if len(scores) == 3:
-            assert scores[0] > scores[1] > scores[2]
-
-
 class TestTShirtSizeIntegration:
     """Test suite for t-shirt size estimation integration."""
     

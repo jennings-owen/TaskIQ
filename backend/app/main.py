@@ -40,7 +40,6 @@ def get_status():
 
 # Import and include routers
 from app.tasks import router as tasks_router
-from app.ai import router as ai_router
 from app.users import router as users_router
 from app.task_dependencies import router as task_deps_router
 from app.priority_scores import router as priority_scores_router
@@ -48,7 +47,6 @@ from app.tshirt_scores import router as tshirt_scores_router
 from app.daily_plan import router as daily_plan_router
 
 app.include_router(tasks_router, prefix="/api")
-app.include_router(ai_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
 app.include_router(task_deps_router, prefix="/api")
 app.include_router(priority_scores_router, prefix="/api")
