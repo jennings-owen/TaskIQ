@@ -86,9 +86,9 @@ frontend/src/__tests__/
 - **Version Tracking**: Algorithm version metadata
 
 **PRD Alignment**:
-- Section 5: User Stories (AI capabilities)
+- Section 5: User Stories
 - Section 6: NFR (200ms response time)
-- Section 10: API Design (/ai/rank, /ai/size)
+- Section 10: API Design
 
 **Algorithm Test Coverage**:
 ```python
@@ -423,9 +423,6 @@ GET    /tasks/{id}         - Get specific task
 PUT    /tasks/{id}         - Update task (returns 200)
 DELETE /tasks/{id}         - Delete task (returns 204)
 
-POST   /ai/rank            - Rank tasks by priority
-POST   /ai/size            - T-shirt size recommendation
-
 GET    /users/{id}/tasks   - Get user's tasks
 POST   /tasks_dependencies - Create task dependency
 GET    /tasks/{id}/dependencies - Get task dependencies
@@ -579,8 +576,6 @@ GET    /tasks          → 200 OK
 GET    /tasks/{id}     → 200 OK (or 404 Not Found)
 PUT    /tasks/{id}     → 200 OK (or 404 Not Found)
 DELETE /tasks/{id}     → 204 No Content (or 404 Not Found)
-POST   /ai/rank        → 200 OK
-POST   /ai/size        → 200 OK
 
 Validation errors   → 422 Unprocessable Entity
 Invalid ID format   → 422 Unprocessable Entity
@@ -808,12 +803,10 @@ class TestTasksSecurity:
 
 ### Section 10: API Design
 - All endpoints tested (GET, POST, PUT, DELETE /tasks)
-- /ai/rank endpoint with algorithm validation
-- /ai/size endpoint with edge cases
 - Request/response formats validated
 
 ### Section 11: Database Schema
-- All 5 tables tested (users, tasks, task_dependencies, task_priority_scores, task_tshirt_scores)
+- Core tables tested (users, tasks, task_dependencies)
 - Foreign key constraints validated
 - CASCADE DELETE tested
 - CHECK constraints enforced

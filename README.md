@@ -75,6 +75,8 @@ docker compose version
 
 See [ENV_FORMAT.md](docs/ENV_FORMAT.md) for complete environment variable documentation.
 
+See [SETUP.md](docs/SETUP.md) for instructions on how to run the development environment.
+
 ### Documentation
 
 See [PRD.md](docs/PRD.md) for a complete product requirements document for this project. This includes AI-generated user stories, schema, and information about the project. The top of the document has a table of contents referencing important documentation.

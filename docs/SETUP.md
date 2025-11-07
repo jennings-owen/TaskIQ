@@ -54,40 +54,6 @@ git pull origin master
 
 See [ENV_FORMAT.md](ENV_FORMAT.md) for complete environment variable documentation.
 
-### Quick Setup
-
-**Backend `.env` (create in `/backend/` folder):**
-```env
-# Optional for development - has default value
-# For production, generate with: python -c "import secrets; print(secrets.token_urlsafe(32))"
-SECRET_KEY=dev-secret-key-for-course-project
-
-BACKEND_PORT=8000
-FRONT_END_URL=http://localhost:3000
-```
-
-**Frontend `.env` (create in `/frontend/` folder):**
-```env
-REACT_APP_BACK_END_URL=http://localhost:8000
-```
-
-### Important Notes
-
-**SECRET_KEY:**
-- **Development**: Optional - app has a safe default if not set
-- **Production**: **REQUIRED** - generate a unique, cryptographically secure key
-- **Generate secure key**: 
-  ```bash
-  python -c "import secrets; print(secrets.token_urlsafe(32))"
-  ```
-- See [ENV_FORMAT.md](ENV_FORMAT.md) for detailed SECRET_KEY documentation
-
-**General:**
-- If you add new variables, update `ENV_FORMAT.md` to maintain single source of truth
-- `.env` files are in `.gitignore` and should never be committed
-
----
-
 ## 4. Backend Setup (FastAPI)
 
 Move into the backend directory:
@@ -176,35 +142,9 @@ If consuming the API, ensure CORS is configured (already allows `http://localhos
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| CORS errors | Missing/incorrect `FRONT_END_URL` | Set in `.env` and restart backend. |
+| CORS errors | Missing/incorrect environment variables | Set in `.env` and restart backend. |
 | React can't reach API | Wrong base URL | Confirm `REACT_APP_API_BASE_URL` matches backend port. |
 | Uvicorn not found | venv not activated / install failed | Re-run activation; reinstall requirements. |
 | Port already in use | Another process on 8000/3000 | Change port (`--port 8001`) or stop conflicting process. |
 | Env vars not loading | `.env` misplaced | Ensure file is inside `backend/` and named `.env`. |
-
-Check active environment variables:
-```powershell
-Get-Content .env
-```
-
----
-
-## 10. Quick Start Summary
-
-Backend:
-```powershell
-cd backend
-python -m venv .venv
-./.venv/Scripts/Activate.ps1
-pip install -r ../requirements.txt
-python .\main.py   # uses BACKEND_PORT if set, else 8000
-```
-
-Frontend (new terminal):
-```powershell
-cd frontend
-npm install
-npm start
-```
-
 ---

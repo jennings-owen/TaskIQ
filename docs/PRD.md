@@ -11,7 +11,6 @@
 | Document | Link | Description |
 |:---------|:-----|:------------|
 | PRD.md   | This document | This is the overall product requirement document for the project. |
-| PRD_AI_DRAFT.md | [Draft](./PRD_AI_DRAFT.md) | This is the original AI generated PRD document. It serves as the baseline for this final PRD document. |
 | SETUP.md | [Setup](./SETUP.md) | Information about environment setup, docker usage, and deployment. |
 | AGILE_PLAN.md | [Plan](./AGILE_PLAN.md) | This document outlines all the tasks required to complete a MVP. |
 | schema.sql | [Schema](../backend/schema.sql) | The initial SQLite schema file based on the constraints defined in this PRD. |
@@ -424,31 +423,6 @@ This section documents detailed user stories with acceptance criteria in Given/W
 
 ---
 
-### User Story 9: Batch Task Ranking
-
-**ID:** US-009  
-**Persona:** Lisa Tran, The Product Manager  
-**User Story:** As a Product Manager, I want to send multiple tasks to the AI ranking endpoint and receive priority scores for all of them at once, so that I can quickly prioritize my entire backlog.
-
-**Acceptance Criteria:**
-* **Given** I have multiple tasks in my backlog,  
-  **When** I send a batch request to the `/api/ai/rank` endpoint with an array of tasks,  
-  **Then** the system should calculate and return priority scores for all tasks in the batch.
-  
-* **Given** I receive the batch ranking results,  
-  **When** I view the response,  
-  **Then** each task should have an associated priority score between 1 and 100.
-  
-* **Given** two tasks have the same deadline but different estimated durations,  
-  **When** I request batch ranking,  
-  **Then** the task with the longer duration should receive a slightly higher priority score.
-  
-* **Given** I send an empty array or invalid data,  
-  **When** I call the ranking endpoint,  
-  **Then** I should receive a 400 Bad Request error with a helpful message.
-
----
-
 ### User Story 10: Update Profile Information
 
 **ID:** US-010  
@@ -480,12 +454,10 @@ This section documents detailed user stories with acceptance criteria in Given/W
 ## 7. Release Plan & Milestones
 - Hour 1: Setup FastAPI, SQLite, and models.
 - Hour 2: Implement CRUD endpoints for /tasks.
-- Hour 3: Implement /ai/rank scoring logic.
-- Hour 4: Implement /ai/size endpoint.
-- Hour 5: Setup React with TaskList and TaskForm.
-- Hour 6: Integrate backend APIs in frontend.
-- Hour 7: Add PriorityDashboard and SizeRecommendationForm.
-- Hour 8: Testing, bug fixes, documentation.
+- Hour 3: Setup React with TaskList and TaskForm.
+- Hour 4: Integrate backend APIs in frontend.
+- Hour 5: Add enhanced UI components and features.
+- Hour 6: Testing, bug fixes, documentation.
 
 ## 8. Out of Scope & Future Considerations
 - Advanced AI features such as machine learning-based prioritization are out of scope for the MVP.
@@ -524,57 +496,6 @@ Task Model Example:
   "priority_score": 85
 }
 ```
-2. /ai/rank (Task Priority Scoring)
-
-POST Request:
-```json
-{
-  "tasks": [
-    {
-      "title": "Submit project report",
-      "deadline": "2025-11-06",
-      "estimated_duration": 4
-    },
-    {
-      "title": "Clean workspace",
-      "deadline": "2025-11-15",
-      "estimated_duration": 1
-    }
-  ]
-}
-```
-
-Response:
-```json
-[
-  {"task_id": 1, "priority_score": 92},
-  {"task_id": 2, "priority_score": 45}
-]
-```
-
-Logic (simplified for 1-day scope):
-
-Score = 100 - days_until_deadline * 5 - estimated_duration * 3
-
-Clamped between 1 and 100.
-
-3. /ai/size (T-shirt Size Recommendation)
-
-POST Request:
-```json
-{
-  "height_cm": 175,
-  "weight_kg": 70,
-  "gender": "male",
-  "fit_preference": "regular"
-}
-```
-
-Response:
-```json
-{"recommended_size": "M"}
-```
-
 ## 11. Database Schema
 
 1. users
