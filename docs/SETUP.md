@@ -97,6 +97,7 @@ cd backend
 
 Create and activate a virtual environment (Windows PowerShell):
 ```powershell
+# ENSURE using python version 3.10 for venv setup
 python -m venv .venv
 ./.venv/Scripts/Activate.ps1
 ```
@@ -111,11 +112,7 @@ pip install -r ../requirements.txt
 **Run the backend:**
 ```powershell
 # Default (works without .env file)
-python .\main.py
-
-# Or with custom port
-$env:BACKEND_PORT=8010
-python .\main.py
+uvicorn main:app --reload --port 8000
 ```
 
 **Note:** The backend will start successfully without a `.env` file. It uses sensible defaults:
