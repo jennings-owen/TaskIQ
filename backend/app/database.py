@@ -7,7 +7,7 @@ import os
 # Build an absolute path to the database file relative to this file.
 # This avoids issues when uvicorn is started from a different CWD.
 HERE = Path(__file__).resolve().parent
-DB_PATH = HERE.parent / "team_synapse.db"
+DB_PATH = HERE.parent / "database.db"
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"  # absolute path

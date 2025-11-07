@@ -270,7 +270,7 @@ else:
 ### 8. Database File Security [LOW] ℹ️
 
 **Vulnerability**: Database File in Version Control  
-**Location**: `backend/team_synapse.db`  
+**Location**: `backend/database.db`  
 **Status**: ℹ️ **ACCEPTABLE FOR MVP**
 
 **Risk**: SQLite database file contains data and should not be in version control for production.

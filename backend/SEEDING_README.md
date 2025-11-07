@@ -124,7 +124,7 @@ The scripts include comprehensive error handling for:
 
 - Python 3.6+
 - SQLite3 (included with Python)
-- Existing team_synapse.db with user records
+- Existing database.db with user records
 
 ## Notes
 

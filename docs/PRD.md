@@ -15,7 +15,7 @@
 | AGILE_PLAN.md | [Plan](./AGILE_PLAN.md) | This document outlines all the tasks required to complete a MVP. |
 | schema.sql | [Schema](../backend/schema.sql) | The initial SQLite schema file based on the constraints defined in this PRD. |
 | seed_data.sql | [Data](../backend/seed_data.sql)| The SQL data used to populate the database. |
-| team_synapse.db | [Database](../backend/team_synapse.db)| The SQL database. |
+| database.db | [Database](../backend/database.db)| The SQL database. |
 | ARCHITECTURE.md | [Architecture](./architecture.md) | Architecture design including UML diagrams. |
 | ADR.md | [Architecture Design Record](./ADR.md) | Technical decisions with their justifications. |
 | SECURITY_REVIEW.md | [Security Review](./SECURITY_REVIEW.md) | Security vulnerabilities report and recommendations. |

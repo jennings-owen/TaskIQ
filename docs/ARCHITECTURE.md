@@ -179,7 +179,7 @@ Frontend --> User : Rendered Data
 4. AI endpoints provide task ranking and T-shirt size recommendations
 
 ## 6. Database Schema
-The finalized schema is available at `backend/schema.sql` and the seeded SQLite database is `backend/team_synapse.db`.
+The finalized schema is available at `backend/schema.sql` and the seeded SQLite database is `backend/database.db`.
 
 Short summary of tables (see `backend/schema.sql` for full DDL):
 - `users` (id, name, email, password_hash, created_at)
@@ -281,7 +281,7 @@ npm test
 │   │   └── test_task_dependencies.py # Dependency tests
 │   ├── schema.sql               # Database DDL
 │   ├── seed_data.sql            # Initial data for demo
-│   ├── team_synapse.db          # SQLite database file
+│   ├── database.db          # SQLite database file
 │   ├── main.py                  # Entrypoint for uvicorn
 │   ├── Dockerfile               # Production Docker image
 │   ├── Dockerfile.dev           # Development Docker image
@@ -389,5 +389,5 @@ npm test
 
 ## Appendix
 - Database schema is finalized in `backend/schema.sql`
-- Seeded database available at `backend/team_synapse.db`
+- Seeded database available at `backend/database.db`
 - API documentation available via Swagger UI at `/docs` when backend is running

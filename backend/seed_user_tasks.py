@@ -20,11 +20,11 @@ def get_database_path() -> Path:
     Get the path to the team_synapse database.
     
     Returns:
-        Path: Absolute path to the team_synapse.db file.
+        Path: Absolute path to the database.db file.
     """
     # Use the same path as defined in app/database.py
     here = Path(__file__).resolve().parent
-    db_path = here / "team_synapse.db"
+    db_path = here / "database.db"
     return db_path
 
 
@@ -38,7 +38,7 @@ def execute_seed_for_user(
     
     Args:
         user_id: The ID of the user to create tasks for.
-        db_path: Path to database file. If None, uses default team_synapse.db.
+        db_path: Path to database file. If None, uses default database.db.
         seed_file: Path to seed_for_user.sql file. If None, uses default location.
     
     Raises:

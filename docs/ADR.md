@@ -33,8 +33,8 @@
 ## ADR-003: Database Schema
 ## ADR-003: Database Schema
 - **Status:** Accepted
-- **Context:** A finalized SQLite schema (`backend/schema.sql`) and seeded database (`backend/team_synapse.db`) are available for the MVP.
-- **Decision:** Use the provided SQLite schema and `team_synapse.db` for the MVP. The schema includes tables: `users`, `tasks`, `task_dependencies`, `task_priority_scores`, and `task_tshirt_scores` with appropriate constraints and foreign keys as defined in `backend/schema.sql`.
+- **Context:** A finalized SQLite schema (`backend/schema.sql`) and seeded database (`backend/database.db`) are available for the MVP.
+- **Decision:** Use the provided SQLite schema and `database.db` for the MVP. The schema includes tables: `users`, `tasks`, `task_dependencies`, `task_priority_scores`, and `task_tshirt_scores` with appropriate constraints and foreign keys as defined in `backend/schema.sql`.
 - **Consequences:** The backend will use SQLAlchemy models that mirror the schema; migrations can be added later with Alembic if the schema evolves.
 
 ## ADR-004: Security & Validation
